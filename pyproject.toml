@@ -1,0 +1,27 @@
+[project]
+name = "retail-gnn-demand-forecast"
+version = "0.1.0"
+description = "Controlled experiments for retail graph neural network demand forecasting"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "scipy>=1.10.0",
+    "tabulate>=0.9.0",
+    "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+benchmark = [
+    "prophet>=1.1.0",
+    "darts>=0.24.0",
+    "torch>=2.0.0",
+    "torch-geometric>=2.3.0",
+    "torch-geometric-temporal>=0.54.0",
+]
+notebook = ["ipykernel>=6.0.0", "jupyter>=1.0.0"]
+
+[tool.uv]
+package = false

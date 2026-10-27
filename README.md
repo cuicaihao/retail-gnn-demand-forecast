@@ -39,12 +39,14 @@
 ## 二、网络拓扑与四层数据生成机制 (DGP)
 
 零售网络拓扑定义为异构有向加权图 $G = (\mathcal{V}^{\mathrm{W}} \cup \mathcal{V}^{\mathrm{S}}, \mathcal{E}^{\mathrm{sup}} \cup \mathcal{E}^{\mathrm{spa}})$：
+
 - **节点集合**：仓库 $\mathcal{V}^{\mathrm{W}} = \{W_1, W_2\}$，门店 $\mathcal{V}^{\mathrm{S}} = \{S_1, \dots, S_{10}\}$，分布在 Cluster A（东区高密）、Cluster B（中轴走廊）、Cluster C（西区中心）。
 - **跨仓枢纽门店**：$S_4$ 与 $S_6$ 物理上紧邻由 $W_1$ 供货的门店，但后台货源挂在 $W_2$ 下，承担跨仓风险对冲与客流承接角色。
 - **空间随机游走转移矩阵**：
   $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot \mathbb{I}(0 < d_{ij} \le 3.5\text{ km}), \qquad \mathbf{P}^{\mathrm{spa}} = (\mathbf{D}^{\mathrm{spa}})^{-1}\mathbf{A}^{\mathrm{spa}}$$
 
 数据生成严格包含四层物理机制：
+
 1. **仓库状态马尔可夫链** $Z_{w,t}^{\mathrm{wh}} \in \{0, 1, 2\}$ 与 1 天物流提前期决定次日门店库存供给配额 $V_{i,t}$（999 / 95 / 50 件）。
 2. **异步错峰促销日历** $q_{i,t} \in \{0, 0.20, 0.35\}$ 与单店基准需求 $\mu_{i,t}^{\mathrm{self}}$。
 3. **符号翻转空间耦合**：邻店健康大促导致虹吸流失 $-C_{i,t}$（按行读取 $P_{ij}^{\mathrm{spa}}$）；邻店断货导致被动溢出流入 $+L_{i,t}$（按列读取 $P_{ji}^{\mathrm{spa}}$，转化率 $\eta = 0.85$）。
@@ -100,7 +102,7 @@
 本项目生成的所有高清图表均提供双语版本（中文版 `.png` / `.zh.webp` 与英文版 `_en.png` / `.en.webp`）：
 
 | 序号 | 中文高清图预览 | 英文对应图 | 内容说明 |
-|:---:|:---|:---|:---|
+| :---: | :--- | :--- | :--- |
 | **图 1** | ![Fig 1](figures/retail_network_topology.png) | [Fig 1 (EN)](figures/retail_network_topology_en.png) | 2 仓 10 店异构网络拓扑与块对角空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ |
 | **图 2** | ![Fig 2](figures/all_stores_sales_panorama.png) | [Fig 2 (EN)](figures/all_stores_sales_panorama_en.png) | 全网 10 家门店观测销量与潜在需求全景（2025 下半年） |
 | **图 3** | ![Fig 3](figures/single_store_decomposition.png) | [Fig 3 (EN)](figures/single_store_decomposition_en.png) | 单店需求结构微观拆解：S1 截断损失 vs S6 溢出峰值 |
@@ -116,7 +118,9 @@
 retail-gnn-demand-forecast/
 ├── CASE_DESIGN.md                  # 详细案例数学推导与实验参数设计文档
 ├── README.md                       # 项目主文档（本文件）
-├── requirements.txt                # 极简轻量依赖文件 (numpy, pandas, matplotlib, scipy, pillow)
+├── pyproject.toml                  # uv 项目配置与依赖分组
+├── uv.lock                         # 锁定依赖版本
+├── requirements.txt                # pip 兼容的核心依赖清单
 ├── retail_gnn_benchmark.py         # 核心基准代码（DGP生成、OLS消融、多工具评测与表格打印）
 ├── generate_figures.py             # 双语出版级图表生成器 (PNG + WebP，共 24 个文件)
 ├── retail_gnn_demand_forecast.ipynb# 完整复现与交互式探索 Jupyter Notebook (带预执行结果)
@@ -137,29 +141,36 @@ retail-gnn-demand-forecast/
 
 ### 1. 环境准备
 
-推荐使用 Python 3.10+ 及虚拟环境：
+推荐使用 Python 3.10+ 和 [uv](https://docs.astral.sh/uv/) 管理虚拟环境及依赖：
 
 ```bash
 git clone https://github.com/cuicaihao/retail-gnn-demand-forecast.git
 cd retail-gnn-demand-forecast
 
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+uv sync
 ```
+
+`uv sync` 会在项目目录创建 `.venv` 并安装核心依赖。需要运行全景 benchmark 或打开 Notebook 时，按需安装对应依赖：
+
+```bash
+uv sync --extra benchmark
+uv sync --extra notebook
+```
+
+也可以继续通过 `pip install -r requirements.txt` 安装核心依赖。
 
 ### 2. 一键运行全量基准与图表生成
 
 运行主程序，将在命令行输出第四章所有表格，并在 `data/` 和 `figures/` 下输出所有数据与高清图：
 
 ```bash
-python retail_gnn_benchmark.py
+uv run python retail_gnn_benchmark.py
 ```
 
 ### 3. 打开 Jupyter Notebook 进行逐节验证
 
 ```bash
-jupyter notebook retail_gnn_demand_forecast.ipynb
+uv run --extra notebook jupyter notebook retail_gnn_demand_forecast.ipynb
 ```
 
 ---
@@ -173,4 +184,3 @@ jupyter notebook retail_gnn_demand_forecast.ipynb
 - **系列关联文章**：
   - [《用 Prophet 做零售需求预测：从模型原理到工程实践》](https://cuicaihao.github.io/zh/posts/2026-10-01-prophet-retail-demand-forecast/)
   - [《从一棵树到一片森林：树模型的数学原理、算法演进与工程实践》](https://cuicaihao.github.io/zh/posts/2026-10-17-from-a-single-tree-to-a-forest-mathematical-principles-algorithmic-evolution-and-engineering-practices-of-tree-models/)
-

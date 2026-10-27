@@ -1,15 +1,9 @@
-# Core scientific stack (required for data generation, closed-form OLS/ST-GNN, and figure plotting)
+# Core dependencies for data generation, analytical OLS/ST-GNN, and figure plotting.
+# Optional benchmark and notebook dependencies are defined as extras in pyproject.toml.
 numpy>=1.24.0
 pandas>=2.0.0
 matplotlib>=3.7.0
 scipy>=1.10.0
 tabulate>=0.9.0
 pillow>=10.0.0
-
-# Optional toolkits for Section 4.6 Panorama Benchmark (gracefully simulated if not installed)
-prophet>=1.1.0
-darts>=0.24.0
-torch>=2.0.0
-torch_geometric>=2.3.0
-torch_geometric_temporal>=0.54.0
 
