@@ -1,6 +1,6 @@
 # 零售门店网络需求预测技术与实验全景报告 (`experimental-report.md`)
 
-> **阅读指南**：本报告将枯燥的算法评测还原为真实的零售门店经营故事，结合严谨的数学物理机制与工程实测。前两节介绍「2 座仓库 + 10 家门店 + 3 个商圈」的受控网络拓扑与四层数据生成过程（DGP）；随后在**实验一、实验二、实验三**以及**实验四（三大真实公开工业级基准）**中，严格按照 **「① 实验目的 $\to$ ② 数据结构是否与目的一致 $\to$ ③ 参评模型与成绩单 $\to$ ④ 业务案例讲透结果」** 的逻辑展开。
+> **阅读指南**：本报告将枯燥的算法评测还原为真实的零售门店经营故事，结合严谨的数学物理机制与工程实测。前两节介绍「2 座仓库 + 10 家门店 + 3 个商圈」的受控网络拓扑与四层数据生成过程（DGP）；随后在**实验一、实验二、实验三**以及**实验四（三大真实公开工业级基准）**中，严格按照 **「① 实验目的 → ② 数据结构是否与目的一致 → ③ 参评模型与成绩单 → ④ 业务案例讲透结果」** 的逻辑展开。
 
 ---
 
@@ -15,13 +15,15 @@
 因此，为了构建一个既符合真实零售履约与商圈竞争逻辑、又能剥离模型复杂度干扰以严格检验图结构信息边界的受控基准，数据生成过程（DGP）必须具备三个结构性机制：
 
 1. **两跳异构传导路径（2-Hop Heterogeneous Path）**：
+
    $$\text{邻店上游仓库 } W_{w(j)} \xrightarrow[\text{1天日配物流提前期}]{\mathcal{E}^{\mathrm{sup}}} \text{邻店库存上限 } V_{j,t} \xrightarrow[\text{空间客流转移}]{\mathcal{E}^{\mathrm{spa}}} \text{当前门店需求 } \mu_{i,t}^{\mathrm{open}}$$
+
 2. **符号翻转的双向非线性交互（Sign-Flipping Regime Interaction）**：
    邻店 $j$ 的大促 $q_{j,t}$ 对当前门店 $i$ 的影响正负号取决于邻店背后仓库是否断货：
-   - **当邻店仓库供货正常（$Z_{w(j),t-1}^{\mathrm{wh}}=0$）**：邻店大促吸走本店客流，产生**负向促销虹吸（Cannibalization，$\frac{\partial \mu_{i,t}}{\partial q_{j,t}} < 0$）**；
-   - **当邻店仓库断货受限（$Z_{w(j),t-1}^{\mathrm{wh}} \in \{1, 2\}$）**：邻店大促迅速卖空触发库存截断，未满足顾客涌入本店，产生**正向断货溢出（Spillover，$\frac{\partial \mu_{i,t}}{\partial q_{j,t}} > 0$）**。
+   - **当邻店仓库供货正常($Z_{w(j),t-1}^{\mathrm{wh}}=0$)**：邻店大促吸走本店客流，产生**负向促销虹吸(Cannibalization, $\frac{\partial \mu_{i,t}}{\partial q_{j,t}} < 0$)**；
+   - **当邻店仓库断货受限($Z_{w(j),t-1}^{\mathrm{wh}} \in \{1, 2\}$)**：邻店大促迅速卖空触发库存截断，未满足顾客涌入本店，产生**正向断货溢出(Spillover, $\frac{\partial \mu_{i,t}}{\partial q_{j,t}} > 0$)**。
 3. **跨仓交界枢纽的参数共享与归纳迁移**：
-   在同一商圈部署由不同仓库供货的交界店（$S_4, S_6$）。当东区仓 $W_1$ 断货时，$W_1$ 供货的门店销量被死死卡在 50 件上限，无法直接观测真实需求；但同商圈内由西区仓 $W_2$ 供货的交界店货源充足，能完整记录溢出客流峰值。图模型利用消息传递算子，从未截断样本中学出溢出算子并推广至全网。
+   在同一商圈部署由不同仓库供货的交界店($S_4, S_6$)。当东区仓 $W_1$ 断货时， $W_1$ 供货的门店销量被死死卡在 50 件上限，无法直接观测真实需求；但同商圈内由西区仓 $W_2$ 供货的交界店货源充足，能完整记录溢出客流峰值。图模型利用消息传递算子，从未截断样本中学出溢出算子并推广至全网。
 
 ---
 
@@ -30,22 +32,23 @@
 ![图 1：零售网络拓扑与两跳传导机制](figures/fig1_retail_network_topology.png)
 > 📊 **图 1 说明**：
 >
-> - **(a) 左图（物理网络拓扑）**：展示「2 座供货仓库（$W_1$ 橙红、$W_2$ 蓝青）+ 10 家门店 + 3 大地理商圈」的物理空间分布。虚线代表上游供货链路 $\mathcal{E}^{\mathrm{sup}}$，实线代表门店间基于步行距离衰减的客流转移边 $\mathcal{E}^{\mathrm{spa}}$；**红色加粗边框突出标出了两家关键的跨仓枢纽店**——东区商圈内由 $W_2$ 供货的 $S_4$ 以及中轴走廊中间夹心的 $S_6$。
-> - **(b) 右图（空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ 热力图）**：对角线置 0（消除自身转移），以 Blues 蓝色深浅呈现同一商圈内邻近门店间的转移概率 $P_{ij}^{\mathrm{spa}}$；商圈外部转移概率严格归零（呈现白色空白），体现出清晰的地理局部性。
+> - **(a) 左图（物理网络拓扑）**：展示「2 座供货仓库($W_1$ 橙红、 $W_2$ 蓝青)+ 10 家门店 + 3 大地理商圈」的物理空间分布。虚线代表上游供货链路 $\mathcal{E}^{\mathrm{sup}}$ ，实线代表门店间基于步行距离衰减的客流转移边 $\mathcal{E}^{\mathrm{spa}}$ ；**红色加粗边框突出标出了两家关键的跨仓枢纽店**——东区商圈内由 $W_2$ 供货的 $S_4$ 以及中轴走廊中间夹心的 $S_6$ 。
+> - **(b) 右图(空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ 热力图)**：对角线置 0（消除自身转移），以 Blues 蓝色深浅呈现同一商圈内邻近门店间的转移概率 $P_{ij}^{\mathrm{spa}}$ ；商圈外部转移概率严格归零（呈现白色空白），体现出清晰的地理局部性。
 > - *对应数据：[`plot_fig1_topology_nodes.csv`](results/plot_data/plot_fig1_topology_nodes.csv) 与 [`plot_fig1_spatial_matrix.csv`](results/plot_data/plot_fig1_spatial_matrix.csv)*
 
-网络拓扑定义为异构有向加权图 $G = (\mathcal{V}^{\mathrm{W}} \cup \mathcal{V}^{\mathrm{S}}, \; \mathcal{E}^{\mathrm{sup}} \cup \mathcal{E}^{\mathrm{spa}})$：
+网络拓扑定义为异构有向加权图 $G = (\mathcal{V}^{\mathrm{W}} \cup \mathcal{V}^{\mathrm{S}}, \; \mathcal{E}^{\mathrm{sup}} \cup \mathcal{E}^{\mathrm{spa}})$ ：
 
-- **仓库集合**：$\mathcal{V}^{\mathrm{W}} = \{W_1\text{ (东区仓)}, W_2\text{ (西区仓)}\}$
-- **门店集合**：$\mathcal{V}^{\mathrm{S}} = \{S_1, \dots, S_{10}\}$，划分为三大地理商圈：
+- **仓库集合**： $\mathcal{V}^{\mathrm{W}} = \{W_1\text{ (东区仓)}, W_2\text{ (西区仓)}\}$
+- **门店集合**： $\mathcal{V}^{\mathrm{S}} = \{S_1, \dots, S_{10}\}$ ，划分为三大地理商圈：
 
 | 商圈名称 | 包含门店 | 供货仓库 | 坐标 $(x, y)$ (km) | 门店在网络中的拓扑角色与日常处境 |
 | :--- | :--- | :--- | :--- | :--- |
-| **东区高密商圈**<br>*(Cluster A)* | **$S_1, S_2, S_3$**<br>**$S_4$（跨仓交界店）** | $S_1\text{--}S_3$ 靠 **$W_1$**<br>**$S_4$ 靠 $W_2$** | $S_1(2.0, 8.0)$<br>$S_2(3.0, 8.4)$<br>$S_3(2.4, 7.0)$<br>$S_4(3.5, 7.3)$ | 四家店扎堆在东区核心街区（步行几分钟互通）。前三家店同吃东区仓 $W_1$ 大锅饭；唯独 **$S_4$ 是由西区仓 $W_2$ 供货的交界店**。当 $W_1$ 断货时，$S_1\text{--}S_3$ 限购，顾客全部涌向货源充足的 $S_4$。 |
-| **中轴走廊商圈**<br>*(Cluster B)* | **$S_5, S_7$（东西侧翼）**<br>**$S_6$（跨仓枢纽店）** | $S_5, S_7$ 靠 **$W_1$**<br>**$S_6$ 靠 $W_2$** | $S_5(7.5, 5.0)$<br>$S_6(8.3, 5.5)$<br>$S_7(8.8, 4.6)$ | 三家店沿城市主干道排布，**$S_6$ 夹在 $S_5$ 与 $S_7$ 正中间**。平时 $S_5, S_7$ 轮流大促吸走 $S_6$ 客流；一旦 $W_1$ 断货，$S_5$ 与 $S_7$ 的溢出客流左右夹击灌入中间由 $W_2$ 供货的 $S_6$。 |
-| **西区区域中心**<br>*(Cluster C)* | **$S_8, S_9, S_{10}$** | 全部靠 **$W_2$** | $S_8(14.0, 2.5)$<br>$S_9(15.0, 2.9)$<br>$S_{10}(14.4, 1.7)$ | 独立西区商圈，远离东区中轴（无客流往来），且**共用西区仓 $W_2$**。同甘共苦，商圈内几乎不存在跨仓不对称大转移，是天然的同质对照组。 |
+| **东区高密商圈**<br>*(Cluster A)* | **$S_1, S_2, S_3$**<br>**$S_4$ （跨仓交界店）** | $S_1\text{--}S_3$ 靠 **$W_1$**<br>**$S_4$ 靠 $W_2$** | $S_1(2.0, 8.0)$ <br> $S_2(3.0, 8.4)$ <br> $S_3(2.4, 7.0)$ <br> $S_4(3.5, 7.3)$ | 四家店扎堆在东区核心街区（步行几分钟互通）。前三家店同吃东区仓 $W_1$ 大锅饭；唯独 **$S_4$ 是由西区仓 $W_2$ 供货的交界店**。当 $W_1$ 断货时， $S_1\text{--}S_3$ 限购，顾客全部涌向货源充足的 $S_4$ 。 |
+| **中轴走廊商圈**<br>*(Cluster B)* | **$S_5, S_7$ （东西侧翼）**<br>**$S_6$ （跨仓枢纽店）** | $S_5, S_7$ 靠 **$W_1$**<br>**$S_6$ 靠 $W_2$** | $S_5(7.5, 5.0)$ <br> $S_6(8.3, 5.5)$ <br> $S_7(8.8, 4.6)$ | 三家店沿城市主干道排布，**$S_6$ 夹在 $S_5$ 与 $S_7$ 正中间**。平时 $S_5, S_7$ 轮流大促吸走 $S_6$ 客流；一旦 $W_1$ 断货， $S_5$ 与 $S_7$ 的溢出客流左右夹击灌入中间由 $W_2$ 供货的 $S_6$ 。 |
+| **西区区域中心**<br>*(Cluster C)* | **$S_8, S_9, S_{10}$** | 全部靠 **$W_2$** | $S_8(14.0, 2.5)$ <br> $S_9(15.0, 2.9)$ <br> $S_{10}(14.4, 1.7)$ | 独立西区商圈，远离东区中轴（无客流往来），且**共用西区仓 $W_2$**。同甘共苦，商圈内几乎不存在跨仓不对称大转移，是天然的同质对照组。 |
 
 **空间随机游走转移矩阵**：
+
 $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot \mathbb{I}(0 < d_{ij} \le 3.5\text{ km}), \qquad \mathbf{P}^{\mathrm{spa}} = (\mathbf{D}^{\mathrm{spa}})^{-1}\mathbf{A}^{\mathrm{spa}}$$
 
 ---
@@ -56,29 +59,31 @@ $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot 
 > 📊 **图 2 说明（全网 10 店销售全景）**：
 >
 > - 展现 2025-07-01 至 12-31（共 184 天）全网 10 家门店的时序面板（5 行 2 列）。
-> - **灰色虚线**为无约束的潜在真实需求真值 $D_{i,t}^{\mathrm{sim}}$；**彩色实线**为实际入账销量 $y_{i,t}^{\mathrm{sales}}$（交界枢纽店 $S_4, S_6$ 标题与实线为暖橙色，其余普通店为深蓝色）。
-> - **黄色垂直半透明阴影带**标定各店自身的促销窗口（大促 $q=0.35$ 与中促 $q=0.20$）；**红色倒三角**精准标出发生库存耗尽截断（$D > V$）的缺货点，直观可见 $W_1$ 供货门店在 12 月多次被截断按平在 50 件上限。
+> - **灰色虚线**为无约束的潜在真实需求真值 $D_{i,t}^{\mathrm{sim}}$ ；**彩色实线**为实际入账销量 $y_{i,t}^{\mathrm{sales}}$ (交界枢纽店 $S_4, S_6$ 标题与实线为暖橙色，其余普通店为深蓝色)。
+> - **黄色垂直半透明阴影带**标定各店自身的促销窗口(大促 $q=0.35$ 与中促 $q=0.20$)；**红色倒三角**精准标出发生库存耗尽截断($D > V$)的缺货点，直观可见 $W_1$ 供货门店在 12 月多次被截断按平在 50 件上限。
 > - *对应数据：[`plot_fig2_panorama_184d.csv`](results/plot_data/plot_fig2_panorama_184d.csv)*
 
 ![图 3：单店需求四层物理分解](figures/fig3_single_store_decomposition.png)
 > 📊 **图 3 说明（单店需求物理层分解）**：
 >
-> - 对比东区主力店 $S_1$（上图，由 $W_1$ 供货受截断）与中轴跨仓枢纽店 $S_6$（下图，由 $W_2$ 供货承接溢出客流）的四层物理量动态演化。
-> - **黑色实线**为单店自身独立基准需求 $\mu_{i,t}^{\mathrm{self}}$；**蓝色填充区**代表受邻店促销分流导致的客流虹吸损失（$-C$）；**浅绿色填充区**代表邻店断货涌入本店的正向溢出增量（$+L$）；**粉红色填充区**代表货架缺货被截断造成的实体失销损失（$D^{\mathrm{sim}} - y^{\mathrm{sales}}$）。
+> - 对比东区主力店 $S_1$ (上图，由 $W_1$ 供货受截断)与中轴跨仓枢纽店 $S_6$ (下图，由 $W_2$ 供货承接溢出客流)的四层物理量动态演化。
+> - **黑色实线**为单店自身独立基准需求 $\mu_{i,t}^{\mathrm{self}}$ ；**蓝色填充区**代表受邻店促销分流导致的客流虹吸损失($-C$)；**浅绿色填充区**代表邻店断货涌入本店的正向溢出增量($+L$)；**粉红色填充区**代表货架缺货被截断造成的实体失销损失($D^{\mathrm{sim}} - y^{\mathrm{sales}}$)。
 > - 右侧浅黄色半透明阴影区域标出最后 28 天（12-04 至 12-31）的统一评测测试集，可见 $S_6$ 在测试期承接了多波高达数十件的断货溢出客流（浅绿峰值）。
 > - *对应数据：[`plot_fig3_decomposition_s1_s6.csv`](results/plot_data/plot_fig3_decomposition_s1_s6.csv)*
 
-- **时间轴**：`2023-01-01` 至 `2025-12-31`（$T = 1,096$ 天）。前 1,068 天训练，后 28 天（`2025-12-04` 至 `12-31`）测试。
-- **Layer 1（仓库马尔可夫链）**：$Z_{w,t}^{\mathrm{wh}} \in \{0\text{ (正常)}, 1\text{ (拥堵)}, 2\text{ (断货)}\}$，时齐转移矩阵驱动。次日门店库存上限 $V_{i,t} \in \{999, 95, 50\}$。测试集包含三次典型冲击：
-  - `12-08` 至 `12-12`：$W_1$ 发生 5 天严重断货（$V = 50$）；
-  - `12-17` 至 `12-20`：$W_2$ 发生 4 天严重断货（$V = 50$）；
-  - `12-25` 至 `12-28`：$W_1$ 发生 4 天分拣拥堵（$V = 95$）。
-- **Layer 2（错峰促销与单店基准需求）**：各店配置不同相位偏移 $\phi_i$，交错进行 8 折（$q=0.20$）与 65 折（$q=0.35$）大促。
+- **时间轴**：`2023-01-01` 至 `2025-12-31`($T = 1,096$ 天)。前 1,068 天训练，后 28 天（`2025-12-04` 至 `12-31`）测试。
+- **Layer 1（仓库马尔可夫链）**： $Z_{w,t}^{\mathrm{wh}} \in \{0\text{ (正常)}, 1\text{ (拥堵)}, 2\text{ (断货)}\}$ ，时齐转移矩阵驱动。次日门店库存上限 $V_{i,t} \in \{999, 95, 50\}$ 。测试集包含三次典型冲击：
+  - `12-08` 至 `12-12`： $W_1$ 发生 5 天严重断货($V = 50$)；
+  - `12-17` 至 `12-20`： $W_2$ 发生 4 天严重断货($V = 50$)；
+  - `12-25` 至 `12-28`： $W_1$ 发生 4 天分拣拥堵($V = 95$)。
+- **Layer 2（错峰促销与单店基准需求）**：各店配置不同相位偏移 $\phi_i$ ，交错进行 8 折($q=0.20$)与 65 折($q=0.35$)大促。
 - **Layer 3（双向空间耦合）**：
-  - 虹吸流失：$C_{i,t} = \sum_j P_{ij}^{\mathrm{spa}} \cdot 125 \cdot \max(0, q_{j,t} - q_{i,t}) \cdot \mathbb{I}(V_{j,t} > 120)$
-  - 溢出流入：$L_{i,t} = \sum_j 0.85 \cdot P_{ji}^{\mathrm{spa}} \cdot \max(0, \mu_{j,t}^{\mathrm{self}} - C_{j,t} - V_{j,t})$
+  - 虹吸流失： $C_{i,t} = \sum_j P_{ij}^{\mathrm{spa}} \cdot 125 \cdot \max(0, q_{j,t} - q_{i,t}) \cdot \mathbb{I}(V_{j,t} > 120)$
+  - 溢出流入： $L_{i,t} = \sum_j 0.85 \cdot P_{ji}^{\mathrm{spa}} \cdot \max(0, \mu_{j,t}^{\mathrm{self}} - C_{j,t} - V_{j,t})$
 - **Layer 4（营业约束与库存截断）**：
+
   $$\mu_{i,t}^{\mathrm{open}} = \max(10, \mu_{i,t}^{\mathrm{self}} - C_{i,t} + L_{i,t}), \qquad D_{i,t}^{\mathrm{sim}} = \max(0, \mu_{i,t}^{\mathrm{open}} + \epsilon_{i,t}), \quad \epsilon \sim \mathcal{N}(0, 4.5^2)$$
+
   $$y_{i,t}^{\mathrm{sales}} = O_t \cdot \mathrm{round}(\min(D_{i,t}^{\mathrm{sim}}, V_{i,t}))$$
 
 ---
@@ -92,43 +97,49 @@ $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot 
 所有模型在预测第 $t$ 天门店 $i$ 的需求时，**严格遵守时间因果律（No Future Leakage）**，输入特征分为三大层次：
 
 - **第一层：外生确定的日历与计划特征（已知未来）**：
-  - 时间趋势 $\frac{t}{1000}$、周末标识 $W_t \in \{0, 1\}$、年度正余弦傅里叶周期 $(\sin_t, \cos_t)$、法定节假日 $H_t \in \{0, 1\}$；
-  - 零售商提前制定的本期促销排期计划 $q_{i,t} \in [0, 1]$ 与营业开关 $O_t \in \{0, 1\}$。
+  - 时间趋势 $\frac{t}{1000}$ 、周末标识 $W_t \in \{0, 1\}$ 、年度正余弦傅里叶周期 $(\sin_t, \cos_t)$ 、法定节假日 $H_t \in \{0, 1\}$ ；
+  - 零售商提前制定的本期促销排期计划 $q_{i,t} \in [0, 1]$ 与营业开关 $O_t \in \{0, 1\}$ 。
 - **第二层：严格因果的滞后自回归特征（历史观测）**：
-  - 前一日自身实际观测销量 $y_{i,t-1}^{\mathrm{sales}}$ 以及过去 7 天滚动均值 $\bar{y}_{i,t-7..t-1}^{\mathrm{sales}}$；
-  - 历史缺货记录 $\mathbb{I}_{i,t}^{\mathrm{stockout}}$（用于 $L1$ 等去截断模型在训练集剔除被库存压制的不真实样本）。
+  - 前一日自身实际观测销量 $y_{i,t-1}^{\mathrm{sales}}$ 以及过去 7 天滚动均值 $\bar{y}_{i,t-7..t-1}^{\mathrm{sales}}$ ；
+  - 历史缺货记录 $\mathbb{I}_{i,t}^{\mathrm{stockout}}$ (用于 $L1$ 等去截断模型在训练集剔除被库存压制的不真实样本)。
 - **第三层：网络拓扑与上游供应链状态（空间与异构视野）**：
-  - 静态空间邻接与转移矩阵 $\mathbf{P}^{\mathrm{spa}} \in \mathbb{R}^{10 \times 10}$（步行距离核函数生成，保持不变）；
-  - 供货仓库昨日的离散运行状态 $Z_{w(i),t-1}^{\mathrm{wh}} \in \{0\text{ (正常)}, 1\text{ (拥堵)}, 2\text{ (断货)}\}$（仅两跳模型与宽表 GBDT 允许读取）。
+  - 静态空间邻接与转移矩阵 $\mathbf{P}^{\mathrm{spa}} \in \mathbb{R}^{10 \times 10}$ （步行距离核函数生成，保持不变）；
+  - 供货仓库昨日的离散运行状态 $Z_{w(i),t-1}^{\mathrm{wh}} \in \{0\text{ (正常)}, 1\text{ (拥堵)}, 2\text{ (断货)}\}$ （仅两跳模型与宽表 GBDT 允许读取）。
 
 #### 2) 模型的输出到底是什么？ (Outputs)
 
 - **核心预测目标：无约束潜在真实需求（Unconstrained Latent Demand）**：
-  模型输出的数值 $\hat{y}_{i,t}$（记为 $\hat{D}_{i,t}$）物理含义是：**“如果今天货架充足、仓库不断货，门店 $i$ 本身加上所有涌入的客流，真实能卖出多少件？”**
-  - **为何预测潜在需求而非截断销量？** 零售供应链的订货、补货（Replenishment）与安全库存设定必须以真实潜在客流为准。若只预测被 50 件上限按住的销量，系统将陷入“断货 $\to$ 销量低 $\to$ 少订货 $\to$ 更严重断货”的恶性死循环（Censoring Spiral）。
+  模型输出的数值 $\hat{y}_{i,t}$ (记为 $\hat{D}_{i,t}$)物理含义是：**“如果今天货架充足、仓库不断货，门店 $i$ 本身加上所有涌入的客流，真实能卖出多少件？”**
+  - **为何预测潜在需求而非截断销量？** 零售供应链的订货、补货（Replenishment）与安全库存设定必须以真实潜在客流为准。若只预测被 50 件上限按住的销量，系统将陷入“断货 → 销量低 → 少订货 → 更严重断货”的恶性死循环（Censoring Spiral）。
 - **衍生入账销量预测（Constrained Sales Forecast）**：
-  在需要核算财务实收营收的场景下，受限销量预测直接由潜在需求截断得到：$\hat{y}_{i,t}^{\mathrm{sales}} = O_t \cdot \min(\hat{D}_{i,t}, V_{i,t})$。
+  在需要核算财务实收营收的场景下，受限销量预测直接由潜在需求截断得到： $\hat{y}_{i,t}^{\mathrm{sales}} = O_t \cdot \min(\hat{D}_{i,t}, V_{i,t})$ 。
 
 #### 3) 误差是如何计算的？ (Error Metrics & Evaluation Targets)
 
-在受控沙盒实验（实验一至三）中，由于真实世界底层的无约束潜在需求 $D_{i,t}^{\mathrm{sim}}$ 完全可知，所有模型在测试集（最后 28 天）上的预测输出 $\hat{y}_{i,t}$ 均**直接与潜需求真值 $D_{i,t}^{\mathrm{sim}}$ 逐日逐店严格对账**；而在真实公开数据集（实验四）中，由于真值无约束需求不可见，对账目标退化为真实观测销量 $y_{i,t}^{\mathrm{sales}}$。
+在受控沙盒实验（实验一至三）中，由于真实世界底层的无约束潜在需求 $D_{i,t}^{\mathrm{sim}}$ 完全可知，所有模型在测试集（最后 28 天）上的预测输出 $\hat{y}_{i,t}$ 均**直接与潜需求真值 $D_{i,t}^{\mathrm{sim}}$ 逐日逐店严格对账**；而在真实公开数据集（实验四）中，由于真值无约束需求不可见，对账目标退化为真实观测销量 $y_{i,t}^{\mathrm{sales}}$ 。
 
 评估指标在指定业务切片样本集 $\mathcal{S}$ 上计算：
 
 1. **加权绝对百分比误差（WAPE, %）—— 核心综合精度指标**：
+
    $$\mathrm{WAPE} = \frac{\sum_{(i,t) \in \mathcal{S}} |\hat{y}_{i,t} - D_{i,t}^{\mathrm{sim}}|}{\sum_{(i,t) \in \mathcal{S}} D_{i,t}^{\mathrm{sim}}} \times 100\%$$
+
    - *特点*：相比传统 MAPE 在低销量日分母接近 0 产生数十倍失真爆发的问题，WAPE 以全局总需求为分母加权，完全消除了除零奇点，是工业界供应链对账的金标准。
 2. **平均绝对误差（MAE, 件/天）—— 实体物理量误差**：
+
    $$\mathrm{MAE} = \frac{1}{|\mathcal{S}|} \sum_{(i,t) \in \mathcal{S}} |\hat{y}_{i,t} - D_{i,t}^{\mathrm{sim}}|$$
+
    - *特点*：直接以“件/天”为量纲，直观体现单店每天平均备货量偏差了多少件实体商品。
 3. **系统性偏差率（Bias, %）—— 备货方向诊断指标**：
+
    $$\mathrm{Bias} = \frac{\sum_{(i,t) \in \mathcal{S}} (\hat{y}_{i,t} - D_{i,t}^{\mathrm{sim}})}{\sum_{(i,t) \in \mathcal{S}} D_{i,t}^{\mathrm{sim}}} \times 100\%$$
-   - *特点*：**正偏（$+$, Over-forecast）**意味着模型过度估计导致压仓滞销；**负偏（$-$, Under-forecast）**意味着模型系统性少报漏报，导致严重缺货失销。
+
+   - *特点*：**正偏($+$, Over-forecast)**意味着模型过度估计导致压仓滞销；**负偏($-$, Under-forecast)**意味着模型系统性少报漏报，导致严重缺货失销。
 4. **四大业务评测切片集合 $\mathcal{S}$**：
-   - **总体测试集（Overall, $n=270$ 样本点）**：测试期所有开门营业的门店日，即 $t \ge 1,068$ 且 $O_t = 1$（27 个营业日 $\times$ 10 家店，排除 12-25 圣诞闭店）；
-   - **常规平稳期（Normal, $n=57$ 样本点）**：自身与周边均无断货大促冲击的平稳营业日（$C_{i,t} \le 5, L_{i,t} \le 5, V_{i,t} \ge 100$）；
-   - **邻店促销虹吸期（Cannibalization, $n=142$ 样本点）**：邻居大促从本店分流客流的时期（$C_{i,t} > 5.0$）；
-   - **跨店断货溢出期（Spillover, $n=88$ 样本点）**：邻居仓库断货受限、客流跨店涌入本店的爆单时期（$L_{i,t} > 5.0$）。
+   - **总体测试集(Overall, $n=270$ 样本点)**：测试期所有开门营业的门店日，即 $t \ge 1,068$ 且 $O_t = 1$ (27 个营业日 $\times$ 10 家店，排除 12-25 圣诞闭店)；
+   - **常规平稳期(Normal, $n=57$ 样本点)**：自身与周边均无断货大促冲击的平稳营业日($C_{i,t} \le 5, L_{i,t} \le 5, V_{i,t} \ge 100$)；
+   - **邻店促销虹吸期(Cannibalization, $n=142$ 样本点)**：邻居大促从本店分流客流的时期($C_{i,t} > 5.0$)；
+   - **跨店断货溢出期(Spillover, $n=88$ 样本点)**：邻居仓库断货受限、客流跨店涌入本店的爆单时期($L_{i,t} > 5.0$)。
 
 ---
 
@@ -138,10 +149,10 @@ $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot 
 
 严格控制所有模型一律采用**闭式最小二乘回归（OLS）**（以及用于处理截断的标杆 Tobit MLE），排除算法非线性表征能力的干扰，每次只改变一个变量：
 
-1. 不剔除缺货假账会偏多少？（$L0$ vs. $L1$）
-2. 不加邻居信息，仅合 10 店数据合账训练能否救回溢出漏报？（$L1$ vs. $L2a/L2b$）
-3. 仅加邻店表面促销为何左右为难？（$L3/L3p$）
-4. 引入“邻居打折 $\times$ 仓库断货”显式两跳组合后误差能降到多少？（$L4$）
+1. 不剔除缺货假账会偏多少？($L0$ vs. $L1$)
+2. 不加邻居信息，仅合 10 店数据合账训练能否救回溢出漏报？($L1$ vs. $L2a/L2b$)
+3. 仅加邻店表面促销为何左右为难？($L3/L3p$)
+4. 引入“邻居打折 $\times$ 仓库断货”显式两跳组合后误差能降到多少？($L4$)
 
 ### 2. 模型数学表达式与规模推导 (L0 至 L4)
 
@@ -153,85 +164,107 @@ $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot 
 
 | 符号 | 物理含义与取值空间 | 在 DGP 与模型中的角色说明 |
 | :--- | :--- | :--- |
-| $t$ | 时间索引，$t \in \{0, 1, \dots, T-1\}$（共 $T=1,096$ 天） | 从基准日 `2023-01-01` 算起，$t < 1,068$ 为训练期，其余 28 天为测试期。 |
-| $i, j$ | 门店索引，$i, j \in \{1, 2, \dots, 10\}$ | 全网 10 家零售门店（$S_1 \dots S_{10}$）。 |
-| $w(i)$ | 供货仓库映射，$w(i) \in \{W_1, W_2\}$ | $S_1, S_2, S_3, S_5, S_7$ 由 $W_1$ 供货；$S_4, S_6, S_8, S_9, S_{10}$ 由 $W_2$ 供货。 |
-| $Z_{w,t}^{\mathrm{wh}}$ | 仓库马尔可夫状态，$Z_{w,t}^{\mathrm{wh}} \in \{0, 1, 2\}$ | $0=\text{正常}$（供货上限 999 件），$1=\text{拥堵}$（上限 95 件），$2=\text{断货}$（上限 50 件）。 |
-| $V_{i,t}$ | 门店进货库存物理上限，$V_{i,t} \in \{999, 95, 50\}$ | 由前一日所属仓库状态决定：$V_{i,t} = \mathrm{Cap}(Z_{w(i),t-1}^{\mathrm{wh}})$。 |
-| $q_{i,t}$ | 本店促销折扣深度，$q_{i,t} \in [0, 1]$ | 日常平稳期为 $0.0$，中促为 $0.20$（8 折），大促为 $0.35$（65 折）。 |
-| $O_t$ | 营业日开关，$O_t \in \{0, 1\}$ | 仅圣诞节当天（12-25）闭店 $O_t=0$；正常营业日 $O_t=1$。 |
-| $\mathbb{I}_{i,t}^{\mathrm{stockout}}$ | 缺货截断指示变量，$\mathbb{I}_{i,t}^{\mathrm{stockout}} \in \{0, 1\}$ | 当潜在需求超出进货上限且开业时为 1：$\mathbb{I}(D_{i,t}^{\mathrm{sim}} > V_{i,t} \text{ 且 } O_t=1)$。 |
-| $P_{ij}^{\mathrm{spa}}$ | 空间随机游走转移概率，$P_{ij}^{\mathrm{spa}} \ge 0, \sum_j P_{ij}^{\mathrm{spa}}=1$ | 顾客因就近原则由源门店 $i$ 步行向目标门店 $j$ 的转移概率。 |
+| $t$ | 时间索引， $t \in \{0, 1, \dots, T-1\}$ (共 $T=1,096$ 天) | 从基准日 `2023-01-01` 算起， $t < 1,068$ 为训练期，其余 28 天为测试期。 |
+| $i, j$ | 门店索引， $i, j \in \{1, 2, \dots, 10\}$ | 全网 10 家零售门店($S_1 \dots S_{10}$)。 |
+| $w(i)$ | 供货仓库映射， $w(i) \in \{W_1, W_2\}$ | $S_1, S_2, S_3, S_5, S_7$ 由 $W_1$ 供货； $S_4, S_6, S_8, S_9, S_{10}$ 由 $W_2$ 供货。 |
+| $Z_{w,t}^{\mathrm{wh}}$ | 仓库马尔可夫状态， $Z_{w,t}^{\mathrm{wh}} \in \{0, 1, 2\}$ | ${0}=\text{正常}$ （供货上限 999 件）， ${1}=\text{拥堵}$ （上限 95 件）， ${2}=\text{断货}$ （上限 50 件）。 |
+| $V_{i,t}$ | 门店进货库存物理上限， $V_{i,t} \in \{999, 95, 50\}$ | 由前一日所属仓库状态决定： $V_{i,t} = \mathrm{Cap}(Z_{w(i),t-1}^{\mathrm{wh}})$ 。 |
+| $q_{i,t}$ | 本店促销折扣深度， $q_{i,t} \in [0, 1]$ | 日常平稳期为 ${0.0}$ ，中促为 ${0.20}$ （8 折），大促为 ${0.35}$ （65 折）。 |
+| $O_t$ | 营业日开关， $O_t \in \{0, 1\}$ | 仅圣诞节当天（12-25）闭店 $O_t=0$ ；正常营业日 $O_t=1$ 。 |
+| $\mathbb{I}_{i,t}^{\mathrm{stockout}}$ | 缺货截断指示变量， $\mathbb{I}_{i,t}^{\mathrm{stockout}} \in \{0, 1\}$ | 当潜在需求超出进货上限且开业时为 1： $\mathbb{I}(D_{i,t}^{\mathrm{sim}} > V_{i,t} \text{ 且 } O_t=1)$ 。 |
+| $P_{ij}^{\mathrm{spa}}$ | 空间随机游走转移概率， $P_{ij}^{\mathrm{spa}} \ge 0, \sum_j P_{ij}^{\mathrm{spa}}=1$ | 顾客因就近原则由源门店 $i$ 步行向目标门店 $j$ 的转移概率。 |
 | $\hat{y}_{i,t}$ | 最终需求预测值（非负件数） | 当 $O_t=0$ 时强制置零，营业日由模型回归方程输出。 |
 
-所有单店模型的公共局部特征向量记为 $\mathbf{x}_{i,t}^{\mathrm{local}} \in \mathbb{R}^7$，由常数截距项 $1$ 与 6 维协变量向量 $\tilde{\mathbf{x}}_{i,t} \in \mathbb{R}^6$ 构成：
+所有单店模型的公共局部特征向量记为 $\mathbf{x}_{i,t}^{\mathrm{local}} \in \mathbb{R}^7$ ，由常数截距项 ${1}$ 与 6 维协变量向量 $\tilde{\mathbf{x}}_{i,t} \in \mathbb{R}^6$ 构成：
+
 $$\mathbf{x}_{i,t}^{\mathrm{local}} = \begin{bmatrix} 1 \\ \tilde{\mathbf{x}}_{i,t} \end{bmatrix} = \Big[ 1, \; \frac{t}{1000}, \; W_t, \; \sin\frac{2\pi(t-15)}{365.25}, \; \cos\frac{2\pi(t-15)}{365.25}, \; H_t, \; q_{i,t} \Big]^\top \in \mathbb{R}^7$$
+
 其中具体包含：
 
-1. **常数截距项 $1$**：标定门店基础日常销量；
+1. **常数截距项 ${1}$**：标定门店基础日常销量；
 2. **6 维斜率协变量向量 $\tilde{\mathbf{x}}_{i,t}$**：
-   - **时间缩放趋势项** $\frac{t}{1000}$：将千日时间跨度缩放至 $O(1)$ 阶，防止正规方程数值病态；
-   - **周末指示变量** $W_t \in \{0, 1\}$：周六与周日 $W_t = 1$，工作日 $W_t = 0$；
-   - **傅里叶年度季节性谐波对** $\sin_t = \sin\frac{2\pi(t-15)}{365.25}, \; \cos_t = \cos\frac{2\pi(t-15)}{365.25}$：精确拟合 365.25 天平滑周年消费周期；
-   - **法定节假日脉冲** $H_t \in \{0, 1\}$：元旦、五一、国庆、圣诞前夕等客流高峰期 $H_t=1$；
-   - **自身促销折扣深度** $q_{i,t} \in [0, 1]$：刻画本店自身价格弹性。
+   - **时间缩放趋势项** $\frac{t}{1000}$ ：将千日时间跨度缩放至 $O(1)$ 阶，防止正规方程数值病态；
+   - **周末指示变量** $W_t \in \{0, 1\}$ ：周六与周日 $W_t = 1$ ，工作日 $W_t = 0$ ；
+   - **傅里叶年度季节性谐波对** $\sin_t = \sin\frac{2\pi(t-15)}{365.25}, \; \cos_t = \cos\frac{2\pi(t-15)}{365.25}$ ：精确拟合 365.25 天平滑周年消费周期；
+   - **法定节假日脉冲** $H_t \in \{0, 1\}$ ：元旦、五一、国庆、圣诞前夕等客流高峰期 $H_t=1$ ；
+   - **自身促销折扣深度** $q_{i,t} \in [0, 1]$ ：刻画本店自身价格弹性。
 
 #### 2) 消融阶梯模型数学公式与参数规模拆解
 
 - **$L0\text{ (1A-Local-Naive, 单店全量 OLS)}$**：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\big(0, (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i^{(0)}\big), \quad \text{训练集：} \{t < T_{\mathrm{train}} \mid O_t = 1\}$$
-  - **参数分配**：每家门店独立估计专属回归系数 $\boldsymbol{\beta}_i^{(0)} \in \mathbb{R}^7$。
-  - **模型规模**：单店 7 维特征，全网总自由参数量 $10 \text{ 店} \times 7 = \mathbf{70}$。
+
+  - **参数分配**：每家门店独立估计专属回归系数 $\boldsymbol{\beta}_i^{(0)} \in \mathbb{R}^7$ 。
+  - **模型规模**：单店 7 维特征，全网总自由参数量 ${10} \text{ 店} \times 7 = \mathbf{70}$ 。
   - **核心缺陷**：训练时将发生缺货截断的受限销售量（如供货上限仅 50 件）全额当作真实需求拟合，产生严重的系统性负向低估。
 
 - **$L1\text{ (1B-Local-Uncens, 单店去截断 OLS)}$**：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\big(0, (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i^{(1)}\big), \quad \text{训练集：} \{t < T_{\mathrm{train}} \mid O_t = 1 \text{ 且 } \mathbb{I}_{i,t}^{\mathrm{stockout}} = 0\}$$
-  - **参数分配**：每家门店独立估计专属回归系数 $\boldsymbol{\beta}_i^{(1)} \in \mathbb{R}^7$。
-  - **模型规模**：单店 7 维特征，全网总自由参数量 $10 \text{ 店} \times 7 = \mathbf{70}$。
+
+  - **参数分配**：每家门店独立估计专属回归系数 $\boldsymbol{\beta}_i^{(1)} \in \mathbb{R}^7$ 。
+  - **模型规模**：单店 7 维特征，全网总自由参数量 ${10} \text{ 店} \times 7 = \mathbf{70}$ 。
   - **机制改进**：直接划掉货架被买空的截断日，恢复未截断基准弹性的无偏估计。
 
 - **$L1\text{-Tobit (Right-Censored Tobit MLE)}$**：
-  假设潜在需求服从正态潜变量模型 $y_{i,t}^* = (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i + \varepsilon_{i,t}, \varepsilon \sim \mathcal{N}(0, \sigma_i^2)$，观测销量满足右截断 $y_{i,t}^{\mathrm{sales}} = \min(y_{i,t}^*, V_{i,t})$。对所有营业日建立对数似然：
+  假设潜在需求服从正态潜变量模型 $y_{i,t}^* = (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i + \varepsilon_{i,t}, \varepsilon \sim \mathcal{N}(0, \sigma_i^2)$ ，观测销量满足右截断 $y_{i,t}^{\mathrm{sales}} = \min(y_{i,t}^*, V_{i,t})$ 。对所有营业日建立对数似然：
+
   $$\ln \mathcal{L}_i(\boldsymbol{\beta}_i, \sigma_i) = \sum_{t \in \mathcal{U}_i} \Big( -\ln \sigma_i + \ln \phi\big(\frac{y_{i,t}^{\mathrm{sales}} - (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i}{\sigma_i}\big) \Big) + \sum_{t \in \mathcal{C}_i} \ln \ Big( 1 - \Phi\big(\frac{V_{i,t} - (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i}{\sigma_i}\big) \Big)$$
-  其中 $\mathcal{U}_i = \{t < T_{\mathrm{train}} \mid O_t=1, \mathbb{I}_{i,t}^{\mathrm{stockout}}=0\}$ 为未截断集合，$\mathcal{C}_i = \{t < T_{\mathrm{train}} \mid O_t=1, \mathbb{I}_{i,t}^{\mathrm{stockout}}=1\}$ 为截断集合，$\phi$ 与 $\Phi$ 分别为标准正态概率密度函数与累积分布函数。
-  - **模型规模**：单店 7 维特征，每店估计 7 个回归系数加 1 个残差对数标准差 $\ln \sigma_i$，全网 $10 \times (7 + 1) = \mathbf{80}$ 参数。
+
+  其中 $\mathcal{U}_i = \{t < T_{\mathrm{train}} \mid O_t=1, \mathbb{I}_{i,t}^{\mathrm{stockout}}=0\}$ 为未截断集合， $\mathcal{C}_i = \{t < T_{\mathrm{train}} \mid O_t=1, \mathbb{I}_{i,t}^{\mathrm{stockout}}=1\}$ 为截断集合， $\phi$ 与 $\Phi$ 分别为标准正态概率密度函数与累积分布函数。
+  - **模型规模**：单店 7 维特征，每店估计 7 个回归系数加 1 个残差对数标准差 $\ln \sigma_i$ ，全网 ${10} \times (7 + 1) = \mathbf{80}$ 参数。
 
 - **$L2a\text{ (1B'-Pooled-Shared, 全网池化共享弹性 OLS)}$**：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\Bigg(0, \; (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \begin{bmatrix} \alpha_i \\ \boldsymbol{\beta}_{\mathrm{shared}} \end{bmatrix} \Bigg) = O_t \cdot \max\Big(0, \; \alpha_i + \tilde{\mathbf{x}}_{i,t}^\top \boldsymbol{\beta}_{\mathrm{shared}}\Big)$$
-  - **公式与 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 的关联**：门店 $i$ 在预测时依然直接读取自身 $\mathbf{x}_{i,t}^{\mathrm{local}} = [1, \tilde{\mathbf{x}}_{i,t}^\top]^\top$。不同之处在于，第一项常数截距乘以门店专属参数 $\alpha_i$，而后 6 项斜率特征 $\tilde{\mathbf{x}}_{i,t}$ 乘以全网 10 店共享的弹性参数 $\boldsymbol{\beta}_{\mathrm{shared}} \in \mathbb{R}^6$。
+
+  - **公式与 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 的关联**：门店 $i$ 在预测时依然直接读取自身 $\mathbf{x}_{i,t}^{\mathrm{local}} = [1, \tilde{\mathbf{x}}_{i,t}^\top]^\top$ 。不同之处在于，第一项常数截距乘以门店专属参数 $\alpha_i$ ，而后 6 项斜率特征 $\tilde{\mathbf{x}}_{i,t}$ 乘以全网 10 店共享的弹性参数 $\boldsymbol{\beta}_{\mathrm{shared}} \in \mathbb{R}^6$ 。
   - **全网联合设计矩阵**：在全局大账本回归（Pooled Regression）形式下，通过门店 One-Hot 哑变量向量 $\mathbf{d}_i = [\mathbb{I}(i=1), \dots, \mathbb{I}(i=10)]^\top \in \{0, 1\}^{10}$ 展开，观测点 $(i, t)$ 的全网大账本特征向量为：
+
     $$\mathbf{x}_{i,t}^{\mathrm{pooled}} = \begin{bmatrix} \mathbf{d}_i \\ \tilde{\mathbf{x}}_{i,t} \end{bmatrix} \in \mathbb{R}^{10 + 6} = \mathbb{R}^{16}$$
-  - **模型规模**：单店有效输入仍为 7 维（从自身 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 读取），全网统一设计矩阵列数即总自由参数量为：$10 \text{ (店专属截距 } \alpha_1 \dots \alpha_{10}) + 6 \text{ (全网共享斜率 } \boldsymbol{\beta}_{\mathrm{shared}}) = \mathbf{16}$。
+
+  - **模型规模**：单店有效输入仍为 7 维(从自身 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 读取)，全网统一设计矩阵列数即总自由参数量为： ${10} \text{ (店专属截距 } \alpha_1 \dots \alpha_{10}) + 6 \text{ (全网共享斜率 } \boldsymbol{\beta}_{\mathrm{shared}}) = \mathbf{16}$ 。
 
 - **$L2b\text{ (1B'-Pooled-Block, 全网池化独立弹性 OLS)}$**：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\big(0, (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i\big), \quad \mathbf{X}_{\mathrm{block}} = \mathrm{diag}(\mathbf{X}_1, \mathbf{X}_2, \dots, \mathbf{X}_{10}) \in \mathbb{R}^{(10T) \times 70}$$
-  - **模型规模**：大账本块对角拼接，单店 7 维，设计矩阵总列数与参数量为 $10 \times 7 = \mathbf{70}$。数学估计结果与 $L1$ 完全等价，用于验证是否因大账本矩阵重构引入伪增益。
+
+  - **模型规模**：大账本块对角拼接，单店 7 维，设计矩阵总列数与参数量为 ${10} \times 7 = \mathbf{70}$ 。数学估计结果与 $L1$ 完全等价，用于验证是否因大账本矩阵重构引入伪增益。
 
 - **$L3\text{ (2-Linear-1Hop, 单店一阶邻域 OLS)}$**：
   在 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 基础上扩展 2 个一阶邻居拓扑汇总特征：
+
   $$\mathbf{x}_{i,t}^{\mathrm{1hop}} = \Big[ \mathbf{x}_{i,t}^{\mathrm{local}\top}, \; \bar{q}_{i,t}^{\mathrm{nbr}}, \; \bar{y}_{i,t-1}^{\mathrm{nbr}} \Big]^\top \in \mathbb{R}^9$$
+
   其中：
-  - $\bar{q}_{i,t}^{\mathrm{nbr}} = \sum_{j=1}^{10} P_{ij}^{\mathrm{spa}} q_{j,t}$：由空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ 权重的**一阶邻居促销深度加权平均**；
-  - $\bar{y}_{i,t-1}^{\mathrm{nbr}} = \sum_{j=1}^{10} P_{ij}^{\mathrm{spa}} \frac{y_{j,t-1}^{\mathrm{sales}}}{100}$：由 $\mathbf{P}^{\mathrm{spa}}$ 权重的**邻居前一日滞后销售量（缩放 100 倍）**。
+  - $\bar{q}_{i,t}^{\mathrm{nbr}} = \sum_{j=1}^{10} P_{ij}^{\mathrm{spa}} q_{j,t}$ ：由空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ 权重的**一阶邻居促销深度加权平均**；
+  - $\bar{y}_{i,t-1}^{\mathrm{nbr}} = \sum_{j=1}^{10} P_{ij}^{\mathrm{spa}} \frac{y_{j,t-1}^{\mathrm{sales}}}{100}$ ：由 $\mathbf{P}^{\mathrm{spa}}$ 权重的**邻居前一日滞后销售量（缩放 100 倍）**。
+
   $$\hat{y}_{i,t} = O_t \cdot \max\big(0, (\mathbf{x}_{i,t}^{\mathrm{1hop}})^\top \boldsymbol{\beta}_i^{(3)}\big)$$
-  - **模型规模**：单店输入 9 维特征，全网独立参数量 $10 \text{ 店} \times 9 = \mathbf{90}$。
+
+  - **模型规模**：单店输入 9 维特征，全网独立参数量 ${10} \text{ 店} \times 9 = \mathbf{90}$ 。
 
 - **$L3p\text{ (2-Pooled-1Hop, 全网池化一阶邻域 OLS)}$**：
-  每家门店保留专属基准项（$L2b$ 的 70 列），追加 2 个全网共享的一阶邻居促销与销量转移系数：
+  每家门店保留专属基准项($L2b$ 的 70 列)，追加 2 个全网共享的一阶邻居促销与销量转移系数：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\Big(0, \; (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i + \gamma_{\mathrm{nbr\_q}} \bar{q}_{i,t}^{\mathrm{nbr}} + \gamma_{\mathrm{nbr\_y}} \bar{y}_{i,t-1}^{\mathrm{nbr}}\Big)$$
-  - **模型规模**：单店输入 9 维特征，设计矩阵总列数与参数量为 $70 + 2 = \mathbf{72}$。
+
+  - **模型规模**：单店输入 9 维特征，设计矩阵总列数与参数量为 ${70} + 2 = \mathbf{72}$ 。
 
 - **$L4\text{ (3-Analytical-2Hop, 两层条件交互解析图 OLS)}$**：
-  在 70 维门店基准之上，显式引入两跳“供应链状态 $\times$ 空间邻居相对促销”解析交互消息向量 $\mathbf{m}_{i,t} \in \mathbb{R}^9$：
+  在 70 维门店基准之上，显式引入两跳“供应链状态 $\times$ 空间邻居相对促销”解析交互消息向量 $\mathbf{m}_{i,t} \in \mathbb{R}^9$ ：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\Big(0, \; (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \boldsymbol{\beta}_i + \mathbf{m}_{i,t}^\top \boldsymbol{\gamma}_{\mathrm{msg}}\Big)$$
+
   其中消息向量 $\mathbf{m}_{i,t} \in \mathbb{R}^9$ 的 9 个物理通道定义严格对应 DGP 生成机制：
-  1. $m_{i,t}^{(1)} = \sum_{j} P_{ij}^{\mathrm{spa}} \max(0, q_{j,t} - q_{i,t}) \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 0)$：邻店供货健康（$Z=0$）时的净促销相对吸引力（**负向虹吸源**）；
-  2. $m_{i,t}^{(2)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$：邻店上游仓库严重断货（$Z=2$）向本店的基准客流溢出比率（**正向溢出源**）；
-  3. $m_{i,t}^{(3)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot q_{j,t} \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$：邻店断货叠加自身大促时的放大溢出项；
-  4. $m_{i,t}^{(4)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot W_t \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$：断货溢出与周末客流的交互；
-  5. $m_{i,t}^{(5)}, m_{i,t}^{(6)}$：断货溢出与年度季节谐波 $\sin_t$ 及法定假日 $H_t$ 的交互项；
-  6. $m_{i,t}^{(7)}, m_{i,t}^{(8)}, m_{i,t}^{(9)}$：邻店上游仓库处于中度分拣拥堵（$Z_{w(j),t-1}^{\mathrm{wh}}=1$）时的温和溢出项。
-  - **模型规模**：单店实际有效特征 16 维（7 维自身 + 9 维两跳消息）；全网设计矩阵列数与参数量为：$70 \text{ (单店基准)} + 9 \text{ (共享物理消息系数 } \boldsymbol{\gamma}_{\mathrm{msg}} \in \mathbb{R}^9) = \mathbf{79}$。
+  1. $m_{i,t}^{(1)} = \sum_{j} P_{ij}^{\mathrm{spa}} \max(0, q_{j,t} - q_{i,t}) \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 0)$ ：邻店供货健康($Z=0$)时的净促销相对吸引力（**负向虹吸源**）；
+  2. $m_{i,t}^{(2)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$ ：邻店上游仓库严重断货($Z=2$)向本店的基准客流溢出比率（**正向溢出源**）；
+  3. $m_{i,t}^{(3)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot q_{j,t} \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$ ：邻店断货叠加自身大促时的放大溢出项；
+  4. $m_{i,t}^{(4)} = \sum_{j} P_{ji}^{\mathrm{spa}} \cdot W_t \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}} = 2)$ ：断货溢出与周末客流的交互；
+  5. $m_{i,t}^{(5)}, m_{i,t}^{(6)}$ ：断货溢出与年度季节谐波 $\sin_t$ 及法定假日 $H_t$ 的交互项；
+  6. $m_{i,t}^{(7)}, m_{i,t}^{(8)}, m_{i,t}^{(9)}$ ：邻店上游仓库处于中度分拣拥堵($Z_{w(j),t-1}^{\mathrm{wh}}=1$)时的温和溢出项。
+  - **模型规模**：单店实际有效特征 16 维（7 维自身 + 9 维两跳消息）；全网设计矩阵列数与参数量为： ${70} \text{ (单店基准)} + 9 \text{ (共享物理消息系数 } \boldsymbol{\gamma}_{\mathrm{msg}} \in \mathbb{R}^9) = \mathbf{79}$ 。
 
 ### 3. 成绩单 (对应 `results/metrics/exp1_feature_ablation_metrics.csv`)
 
@@ -239,8 +272,8 @@ $$\mathbf{x}_{i,t}^{\mathrm{local}} = \begin{bmatrix} 1 \\ \tilde{\mathbf{x}}_{i
 > 📊 **图 4 说明（测试集 28 天相邻门店动态耦合与预测轨迹对齐）**：
 >
 > - 聚焦中轴走廊走廊相邻两店在测试集（2025-12-04 至 12-31）的动态对齐。
-> - **(a) 上图（$S_5$，由 $W_1$ 供货）**：12-08 至 12-12 期间上游仓库断货，供货上限被压缩至 50 件，粉红色区域为未能满足的截断需求。单店全量模型误将截断当作需求崩塌，而去截断模型（蓝虚线）能稳定预估潜在需求。
-> - **(b) 下图（$S_6$，由 $W_2$ 供货的跨仓枢纽店）**：在 $S_5$ 与 $S_7$ 同时断货的 12-08 至 12-12 窗口，两侧客流蜂拥而至，黑色圆点标注的真实潜在需求冲上 **200 件极端峰值**。单店去截断（蓝虚线）和一阶宽表（橙点划线）严重低估，最高仅报出 130–160 件；唯有两层异构图模型（紫红粗实线）精准跟踪到 200 件峰值。
+> - **(a) 上图($S_5$ ，由 $W_1$ 供货)**：12-08 至 12-12 期间上游仓库断货，供货上限被压缩至 50 件，粉红色区域为未能满足的截断需求。单店全量模型误将截断当作需求崩塌，而去截断模型（蓝虚线）能稳定预估潜在需求。
+> - **(b) 下图($S_6$ ，由 $W_2$ 供货的跨仓枢纽店)**：在 $S_5$ 与 $S_7$ 同时断货的 12-08 至 12-12 窗口，两侧客流蜂拥而至，黑色圆点标注的真实潜在需求冲上 **200 件极端峰值**。单店去截断（蓝虚线）和一阶宽表（橙点划线）严重低估，最高仅报出 130–160 件；唯有两层异构图模型（紫红粗实线）精准跟踪到 200 件峰值。
 > - *对应数据：[`plot_fig4_test_28d_s5_s6.csv`](results/plot_data/plot_fig4_test_28d_s5_s6.csv)*
 
 ![图 5：分场景消融与误差柱状图](figures/fig5_regime_ablation_metrics.png)
@@ -285,15 +318,17 @@ $$\mathbf{x}_{i,t}^{\mathrm{local}} = \begin{bmatrix} 1 \\ \tilde{\mathbf{x}}_{i
 GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Gradient Boosted Trees），统一控制树深以保持可比容量：
 
 - **`LightGBM-Base / XGBoost-Base (11d 单店无图基线)`**：
-  - **输入特征 (11 维)**：门店编号 $\mathrm{ID}_i \in [0, 9]$、所属商圈编号 $\mathrm{Cluster}_i \in [0, 2]$、所属供货仓库 $\mathrm{Warehouse}_i \in [0, 1]$、时间趋势 $\frac{t}{1000}$、周末指示 $W_t$、年度正余弦周期对 $(\sin_t, \cos_t)$、节假日脉冲 $H_t$、本店折扣 $q_{i,t}$、本店滞后销量 $\frac{y_{i,t-1}^{\mathrm{sales}}}{100}$ 及 7 天滚动均值 $\frac{\bar{y}_{i,t-7..t-1}^{\mathrm{sales}}}{100}$。
-  - **规模与容量**：80–90 棵树、最大深度 $D_{\mathrm{max}} = 5$、每棵树最大叶节点数 $N_{\mathrm{leaves}} = 31$，全网共计约 **4,960 个树节点结构参数**。
+  - **输入特征 (11 维)**：门店编号 $\mathrm{ID}_i \in [0, 9]$ 、所属商圈编号 $\mathrm{Cluster}_i \in [0, 2]$ 、所属供货仓库 $\mathrm{Warehouse}_i \in [0, 1]$ 、时间趋势 $\frac{t}{1000}$ 、周末指示 $W_t$ 、年度正余弦周期对 $(\sin_t, \cos_t)$ 、节假日脉冲 $H_t$ 、本店折扣 $q_{i,t}$ 、本店滞后销量 $\frac{y_{i,t-1}^{\mathrm{sales}}}{100}$ 及 7 天滚动均值 $\frac{\bar{y}_{i,t-7..t-1}^{\mathrm{sales}}}{100}$ 。
+  - **规模与容量**：80–90 棵树、最大深度 $D_{\mathrm{max}} = 5$ 、每棵树最大叶节点数 $N_{\mathrm{leaves}} = 31$ ，全网共计约 **4,960 个树节点结构参数**。
 - **`LightGBM-1Hop / XGBoost-1Hop (18d 宽表自动分裂)`**：
   - **输入特征 (18 维)**：在 11 维自身特征基础上，**不做任何人工两跳相乘**，仅将邻域原始状态并排铺入宽表：
+
     $$\mathbf{x}_{i,t}^{\mathrm{18d}} = \Big[\mathbf{x}_{i,t}^{\mathrm{11d}\top}, \; Z_{w(i),t-1}^{\mathrm{wh}}, \; \bar{q}_{i,t}^{\mathrm{nbr}}, \; q_{i,t}^{\mathrm{nbr,max}}, \; (\bar{q}_{i,t}^{\mathrm{nbr}} - q_{i,t}), \; \bar{y}_{i,t-1}^{\mathrm{nbr}}, \; f_{i,t}^{\mathrm{disrupt}}, \; f_{i,t}^{\mathrm{congest}}\Big]^\top \in \mathbb{R}^{18}$$
-    其中包含：本店仓库昨日状态 $Z_{w(i),t-1}^{\mathrm{wh}}$、一阶邻店加权折扣 $\bar{q}_{i,t}^{\mathrm{nbr}}$、邻店最大折扣 $q_{i,t}^{\mathrm{nbr,max}} = \max_{j \in \mathcal{N}(i)} q_{j,t}$、邻我折扣差 $(\bar{q}_{i,t}^{\mathrm{nbr}} - q_{i,t})$、邻店滞后销量 $\bar{y}_{i,t-1}^{\mathrm{nbr}}$，以及周边邻店上游仓库断货比例 $f_{i,t}^{\mathrm{disrupt}} = \sum_j P_{ji}^{\mathrm{spa}} \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}}=2)$ 与拥堵比例 $f_{i,t}^{\mathrm{congest}} = \sum_j P_{ji}^{\mathrm{spa}} \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}}=1)$。
-  - **超参数与规模**：80–90 棵树，深度 5，学习率 $\eta = 0.05\text{--}0.09$。模型规模约 **4,960 个决策节点**。单次训练耗时仅 **0.10–0.26 秒**。
+
+    其中包含：本店仓库昨日状态 $Z_{w(i),t-1}^{\mathrm{wh}}$ 、一阶邻店加权折扣 $\bar{q}_{i,t}^{\mathrm{nbr}}$ 、邻店最大折扣 $q_{i,t}^{\mathrm{nbr,max}} = \max_{j \in \mathcal{N}(i)} q_{j,t}$ 、邻我折扣差 $(\bar{q}_{i,t}^{\mathrm{nbr}} - q_{i,t})$ 、邻店滞后销量 $\bar{y}_{i,t-1}^{\mathrm{nbr}}$ ，以及周边邻店上游仓库断货比例 $f_{i,t}^{\mathrm{disrupt}} = \sum_j P_{ji}^{\mathrm{spa}} \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}}=2)$ 与拥堵比例 $f_{i,t}^{\mathrm{congest}} = \sum_j P_{ji}^{\mathrm{spa}} \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}}=1)$ 。
+  - **超参数与规模**：80–90 棵树，深度 5，学习率 $\eta = 0.05\text{--}0.09$ 。模型规模约 **4,960 个决策节点**。单次训练耗时仅 **0.10–0.26 秒**。
 - **`LightGBM-2Hop / XGBoost-2Hop (27d 二阶显式图特征)`**：
-  - **输入特征 (27 维)**：18 维宽表 + 9 维人工解析两跳交互项 $\mathbf{m}_{i,t} \in \mathbb{R}^9$（与 $L4$ 相同的显式溢出/虹吸理论物理量）。
+  - **输入特征 (27 维)**：18 维宽表 + 9 维人工解析两跳交互项 $\mathbf{m}_{i,t} \in \mathbb{R}^9$ (与 $L4$ 相同的显式溢出/虹吸理论物理量)。
   - **模型规模**：27 维输入，80–90 棵深度为 5 的决策树，约 **4,960 个决策节点**。
 
 #### 2) 时间序列广义可加模型 (Prophet 可加模型家族：内生傅里叶季节性与业务外生量解耦设计)
@@ -304,7 +339,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 
 ##### 💡 特征工程背后的数学逻辑与设计哲学深度剖析：
 1. **年周期的正本清源（内生 5 阶傅里叶展开 vs. 手工单频外生列）**：
-   - 数据的真实年度周期是连续平滑变化的 $\mu_0 + A_{\mathrm{yr}} \cos(2\pi(t - t_{\mathrm{peak}})/365.25)$。在传统表格模型中人工构造的 `sin_year` 与 `cos_year`，本质上只是用三角恒等变换构造了 **1 阶（Order 1）单频傅里叶基底**；
+   - 数据的真实年度周期是连续平滑变化的 $\mu_0 + A_{\mathrm{yr}} \cos(2\pi(t - t_{\mathrm{peak}})/365.25)$ 。在传统表格模型中人工构造的 `sin_year` 与 `cos_year`，本质上只是用三角恒等变换构造了 **1 阶（Order 1）单频傅里叶基底**；
    - 将其作为 `add_regressor()` 喂给 Prophet，是把时间戳自带的连续日历规律降级为了离散外生变量。本方案改用原生的 `model.add_seasonality("yearly", period=365.25, fourier_order=5)`，直接利用时间戳 `ds` 生成 10 个正交谐波基，并置于 `seasonality_prior_scale=1.0` 的高斯先验正则化下，不仅大幅提升了对季度平滑过渡与节前爬坡的拟合自由度，且让数据表脱离了对人工外生正弦列的强耦合。
 2. **平滑波形 vs. 垂直台阶（内生周傅里叶与外生 `is_weekend` 的共存哲学）**：
    - 在代数层面上，`model.add_seasonality("weekly", period=7, fourier_order=3)` 拥有 6 个基函数，在数学上已完全张成了一周 7 天的离散函数空间；
@@ -315,13 +350,15 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 4. **空间网络拓扑信号作为真正的外生变量**：
    - 周边邻店的促销力度、昨日销量、断货比例以及上游仓库状态，是**物理供应链网络中的动态拓扑冲击**，完全无法由时间戳 $t$ 推导。它们正是广义可加模型外生变量项 $\sum \beta_k X_k(t)$ 应当承载的真正物理信号。
 5. **全局模型 vs. 局部模型在“门店/商圈/仓库”静态特征上的范式分水岭（为什么树模型必须加，而 Prophet 不能加也不需要加静态 ID？）**：
-   - **全局大模型机制（Global Pooled Model，如 LightGBM / XGBoost）**：是将全网 10 家门店打平堆叠为 $10 \times 156 = 1,560$ 行大宽表统一训练。在全局大表中，如果不输入 `store_id`、`cluster_id`、`warehouse_id` 等静态实体元数据，决策树将完全无法区分当前样本属于哪家门店，预测值将不可避免地退化为全网大盘均值；树模型正是通过 `IF store_id == 5` 等分支切分，来捕获各店的基准客流与商圈溢价；
+   - **全局大模型机制（Global Pooled Model，如 LightGBM / XGBoost）**：是将全网 10 家门店打平堆叠为 ${10} \times 156 = 1,560$ 行大宽表统一训练。在全局大表中，如果不输入 `store_id`、`cluster_id`、`warehouse_id` 等静态实体元数据，决策树将完全无法区分当前样本属于哪家门店，预测值将不可避免地退化为全网大盘均值；树模型正是通过 `IF store_id == 5` 等分支切分，来捕获各店的基准客流与商圈溢价；
    - **单实体局部时序模型机制（Local Univariate Model，如 Prophet）**：采用“一店一模型”架构。在对特定门店（如 Store 5）拟合时，输入序列仅为该店自身的 156 天数据。在该店的时间序列切片中，`store_id` 恒为 5，`cluster_id` 恒为 1，`warehouse_id` 恒为 0，在时间轴上是**方差为 0 的绝对恒定常数列（Zero Variance）**；
    - **代数共线性与参数冗余**：常数列在代数上与 Prophet 的分段线性趋势截距项 $g_i(t) = k_i + m_i \cdot t$ 产生严格的**完全多重共线性（Perfect Multicollinearity）**：
+
      $$k_i + i \cdot \beta_{\mathrm{store}} + C_i \cdot \beta_{\mathrm{cluster}} + W_i \cdot \beta_{\mathrm{wh}} \equiv \text{常量基准截距}$$
+
      实测表明，Stan 优化器只会将原本唯一的常数截距随机分流给这些静态列，对未来预测的增量贡献恒为常数，带来 **0% 的预测精度（WAPE）提升**，反而徒增参数不确定性；
-   - **已 100% 隐式参数化吸收**：局部时序模型中，Store 5 专有的基础截距 $k_5$、变点斜率 $m_5$ 以及周傅里叶基底 $s_{5,\mathrm{weekly}}(t)$，已经将该店的商圈客流规模与物理特异性进行了**最强烈的专属参数化吸收**；
-   - **从“静态实体标签”升华为“动态拓扑状态”（State vs. ID）**：Prophet 无法也不需要接收静态的 `warehouse_id=0`，但**该仓库今日是否发生拥堵或断货**（`upstream_wh_so`，随 $t$ 变化）则是真正的外生时间序列！这正是本次实验在 `Prophet-1Hop` 与 `Prophet-2Hop` 中的核心设计：**拒绝静态无方差编号，精准注入一阶邻店断货比例 `nbr_stockout` 与上游仓库动态供货状态 `upstream_wh_so`**，成功使跨店溢出期误差从 22.51% 斩降至 12.42%！
+   - **已 100% 隐式参数化吸收**：局部时序模型中，Store 5 专有的基础截距 $k_5$ 、变点斜率 $m_5$ 以及周傅里叶基底 $s_{5,\mathrm{weekly}}(t)$ ，已经将该店的商圈客流规模与物理特异性进行了**最强烈的专属参数化吸收**；
+   - **从“静态实体标签”升华为“动态拓扑状态”（State vs. ID）**：Prophet 无法也不需要接收静态的 `warehouse_id=0`，但**该仓库今日是否发生拥堵或断货**(`upstream_wh_so`，随 $t$ 变化)则是真正的外生时间序列！这正是本次实验在 `Prophet-1Hop` 与 `Prophet-2Hop` 中的核心设计：**拒绝静态无方差编号，精准注入一阶邻店断货比例 `nbr_stockout` 与上游仓库动态供货状态 `upstream_wh_so`**，成功使跨店溢出期误差从 22.51% 斩降至 12.42%！
 
 ##### 规格与容量配置：
 - **`Prophet-Base (2d 外生 + 原生周/年傅里叶 0-Hop)`**：单店无图基线，外生变量仅含 `is_weekend` 与 `discount`（2 维），每店由 2 个趋势参数 + 6 个周傅里叶参数 + 10 个年傅里叶参数 + 1 个假日参数 + 2 个外生回归系数组成，单店共 21 个参数，全网 10 店共 **210 个参数**，耗时 **0.68 秒**；
@@ -333,16 +370,23 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 构建纯端到端训练的两层异构时空图神经网络，摆脱解析假设，通过反向传播与 Adam 优化器在 MSE 目标下训练（5 个随机种子测试均值与方差）：
 
 - **Layer 1（供应链状态调制节点编码器）**：
-  通过有向供应链边 $e_{wi}^{\mathrm{sup}}$，将仓库离散状态 $Z_{w(i),t-1}^{\mathrm{wh}} \in \{0, 1, 2\}$（转换为 3 维 One-Hot）与门店 7 维局部基准特征 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 结合。构建调制张量 $\mathbf{u}_{i,t} = [\mathbf{x}_{i,t}^{\mathrm{local}} \cdot \mathbb{I}(Z_{w(i),t-1}^{\mathrm{wh}}=1), \; \mathbf{x}_{i,t}^{\mathrm{local}} \cdot \mathbb{I}(Z_{w(i),t-1}^{\mathrm{wh}}=2)] \in \mathbb{R}^{14}$：
+  通过有向供应链边 $e_{wi}^{\mathrm{sup}}$ ，将仓库离散状态 $Z_{w(i),t-1}^{\mathrm{wh}} \in \{0, 1, 2\}$ （转换为 3 维 One-Hot）与门店 7 维局部基准特征 $\mathbf{x}_{i,t}^{\mathrm{local}}$ 结合。构建调制张量 $\mathbf{u}_{i,t} = [\mathbf{x}_{i,t}^{\mathrm{local}} \cdot \mathbb{I}(Z_{w(i),t-1}^{\mathrm{wh}}=1), \; \mathbf{x}_{i,t}^{\mathrm{local}} \cdot \mathbb{I}(Z_{w(i),t-1}^{\mathrm{wh}}=2)] \in \mathbb{R}^{14}$ ：
+
   $$\mathbf{h}_{i,t}^{(1)} = \mathrm{ELU}(\mathbf{u}_{i,t} \mathbf{W}_1 + \mathbf{b}_1) \in \mathbb{R}^{d_h}, \quad (d_h = 16)$$
+
 - **Layer 2（空间拓扑随机游走消息传递与聚合）**：
-  各店沿空间有向边 $\mathbf{P}^{\mathrm{spa}}$ 吸收来自邻店的潜在客流消息。注意溢出方向由源店 $j$ 流入目标店 $i$，因此空间扩散算子采用转置矩阵 $(\mathbf{P}^{\mathrm{spa}})^\top$：
+  各店沿空间有向边 $\mathbf{P}^{\mathrm{spa}}$ 吸收来自邻店的潜在客流消息。注意溢出方向由源店 $j$ 流入目标店 $i$ ，因此空间扩散算子采用转置矩阵 $(\mathbf{P}^{\mathrm{spa}})^\top$ ：
+
   $$\mathbf{m}_{i,t}^{(2)} = \sum_{j=1}^{10} P_{ji}^{\mathrm{spa}} \mathbf{h}_{j,t}^{(1)} \mathbf{W}_2 \in \mathbb{R}^{1}, \quad (\mathbf{W}_2 \in \mathbb{R}^{d_h \times 1})$$
+
 - **Readout 输出头与残差跳连**：
   最终预测整合单店局部线性跳连（保留基准周期记忆）与两层图网络传递的拓扑增量：
+
   $$\hat{y}_{i,t} = O_t \cdot \max\Big(0, \; (\mathbf{x}_{i,t}^{\mathrm{local}})^\top \mathbf{w}_{\mathrm{loc},i} + \mathbf{m}_{i,t}^{(2)} + w_{\mathrm{cannib}} \cdot \Delta q_{i,t}^{\mathrm{healthy}} + b_{\mathrm{out}}\Big)$$
+
   其中 $\Delta q_{i,t}^{\mathrm{healthy}} = \sum_{j=1}^{10} P_{ij}^{\mathrm{spa}} \max(0, q_{j,t} - q_{i,t}) \cdot \mathbb{I}(Z_{w(j),t-1}^{\mathrm{wh}}=0)$ 刻画邻店供货健康时的相对折扣吸引力。
 - **参数量精准拆解与对比（总计仅 328 个参数）**：
+
   $$\begin{aligned}
   \text{单店局部跳连分支 } \mathbf{W}_{\mathrm{loc}} &\in \mathbb{R}^{10 \times 7} && \implies 70 \text{ 个参数} \\
   \text{第 1 层供应链编码器 } \mathbf{W}_1 \in \mathbb{R}^{14 \times 16}, \; \mathbf{b}_1 \in \mathbb{R}^{16} &\implies 224 + 16 = 240 \text{ 个参数} \\
@@ -360,7 +404,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 >
 > - 横轴为设计矩阵参数/特征列数（对数坐标：7, 16, 27, 70, 80 列），纵轴为预测误差 WAPE (%)。
 > - **深色实心点**代表全周期总体 WAPE，**浅色红圈点**代表跨店断货溢出期 WAPE，垂直虚线连接同一模型的两个误差指标。
-> - 图中清晰可见：单纯通过全网大账本堆砌样本池化参数（$L2a$ 16 列到 $L2b$ 70 列），溢出期误差依然被死死卡在 **22.35%** 的水平警戒线上；唯有引入跨店两跳拓扑交互的模型（27d、79d 与 GNN），溢出期误差才发生断崖式击穿至 **3%–12%**。
+> - 图中清晰可见：单纯通过全网大账本堆砌样本池化参数($L2a$ 16 列到 $L2b$ 70 列)，溢出期误差依然被死死卡在 **22.35%** 的水平警戒线上；唯有引入跨店两跳拓扑交互的模型（27d、79d 与 GNN），溢出期误差才发生断崖式击穿至 **3%–12%**。
 > - *对应数据：[`plot_fig8_feature_dim_vs_wape.csv`](results/plot_data/plot_fig8_feature_dim_vs_wape.csv)*
 
 | 参赛模型与所属家族 | 求解引擎 | 拟合耗时 | 单店维度 / 列数 | 模型规模 | 全网总体 WAPE (5种子均值±标准差) | 常规平稳期 WAPE | 邻店虹吸期 WAPE | 断货溢出期 WAPE (Bias) | 零耦合负对照 WAPE |
@@ -403,7 +447,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 >
 > 📊 *对应数据表：[`exp2_coupling_phase_sweep.csv`](results/metrics/exp2_coupling_phase_sweep.csv)（可视化展现见上方图 8(b) 相变扫描曲面）*
 
-为了从理论物理层面探明“网络信息从何时起超越单店模型”，实验二在 $\beta_{\mathrm{cannib}} \in [0, 160]$ 与 $\eta_{\mathrm{spillover}} \in [0.0, 1.0]$ 的 $5 \times 5$ 参数网格上进行了相变扫描：
+为了从理论物理层面探明“网络信息从何时起超越单店模型”，实验二在 $\beta_{\mathrm{cannib}} \in [0, 160]$ 与 $\eta_{\mathrm{spillover}} \in [0.0, 1.0]$ 的 ${5} \times 5$ 参数网格上进行了相变扫描：
 
 1. **零耦合基线 ($\beta=0, \eta=0.0$)**：单店模型误差为 3.06%，两跳图模型误差为 3.09%，图收益为 **-0.04%**（无优势）；
 2. **弱耦合过渡态 ($\beta=40, \eta=0.25$)**：单店模型误差升至 5.56%，图模型维持在 3.19%，图模型收益首次突破 **+2.36%**；
@@ -417,10 +461,10 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 ![图 7：10 门店 x 3 大场景全量模型误差热力图](figures/fig7_store_regime_heatmap.png)
 > 📊 **图 7 说明（10 家门店在各业务子场景下的模型误差热力图全景）**：
 >
-> - 采用 **`YlOrRd`（黄-橙-红）渐变色温阶** 直观呈现 10 家门店（纵轴 $S_1 \dots S_{10}$）在各算法（横轴 1A 至 3-Neural GNN）下的真实 WAPE（%）；数值越低越呈现浅淡米黄色（低温安全区），数值越高越趋向深红褐色（高温失控区）。
+> - 采用 **`YlOrRd`（黄-橙-红）渐变色温阶** 直观呈现 10 家门店(纵轴 $S_1 \dots S_{10}$)在各算法（横轴 1A 至 3-Neural GNN）下的真实 WAPE（%）；数值越低越呈现浅淡米黄色（低温安全区），数值越高越趋向深红褐色（高温失控区）。
 > - **(a) 左图（常规平稳期）**：全网门店普遍处于 3%–6% 的淡黄色低温区，单店去截断与树模型表现优秀；
 > - **(b) 中图（邻店促销虹吸期）**：单店模型在部分被虹吸门店出现局部橙色加深（6%–13%）；
-> - **(c) 右图（跨店断货溢出期）**：单店模型与一阶线性模型在前几列的交界枢纽店（$S_1\text{--}S_4, S_6$）处全线爆发为刺眼的深橙红高热火苗（WAPE 达 20%–47%！）；而最右侧两列的端到端图神经网络（3 Neural GNN）与解析图将全网扑灭回均匀的浅米黄色（各店仅 2.9%–5.2%）。
+> - **(c) 右图（跨店断货溢出期）**：单店模型与一阶线性模型在前几列的交界枢纽店($S_1\text{--}S_4, S_6$)处全线爆发为刺眼的深橙红高热火苗（WAPE 达 20%–47%！）；而最右侧两列的端到端图神经网络（3 Neural GNN）与解析图将全网扑灭回均匀的浅米黄色（各店仅 2.9%–5.2%）。
 > - *对应数据：[`exp3_store_overall_comparison.csv`](results/metrics/exp3_store_overall_comparison.csv) 与 [`plot_fig7_store_regime_heatmap.csv`](results/plot_data/plot_fig7_store_regime_heatmap.csv)*
 
 ### 1. 实验目的
@@ -433,7 +477,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 
 | 门店与角色 | 业务场景 (天数) | `1B_Uncens` (7d单店) | `2_1Hop_OLS` (9d一阶) | `GBDT_1Hop` (18d树) | `XGBoost_1Hop` (18d树) | `3_Neural_GNN` (2层图网) | 现场业务机制 |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| **$S_4$ (东区跨仓交界店)**<br>*(由 $W_2$ 供货，被 $S_1\text{--}S_3$ 包围)* | • 平稳期 (2天)<br>• 虹吸期 (14天)<br>• **溢出期 (8天)** | 7.22%<br>12.73%<br>**31.13%** | 6.88%<br>10.87%<br>24.82% | 5.09%<br>4.33%<br>6.10% | 5.54%<br>4.64%<br>4.18% | 4.30%<br>**3.89%**<br>**2.89%** | 东区仓 $W_1$ 断货时，$S_1\text{--}S_3$ 同时限购，客流全部涌向 $S_4$。单店模型在溢出期误差达 **31.13%**，图网络压至 **2.89%**！ |
+| **$S_4$ (东区跨仓交界店)**<br>*(由 $W_2$ 供货，被 $S_1\text{--}S_3$ 包围)* | • 平稳期 (2天)<br>• 虹吸期 (14天)<br>• **溢出期 (8天)** | 7.22%<br>12.73%<br>**31.13%** | 6.88%<br>10.87%<br>24.82% | 5.09%<br>4.33%<br>6.10% | 5.54%<br>4.64%<br>4.18% | 4.30%<br>**3.89%**<br>**2.89%** | 东区仓 $W_1$ 断货时， $S_1\text{--}S_3$ 同时限购，客流全部涌向 $S_4$ 。单店模型在溢出期误差达 **31.13%**，图网络压至 **2.89%**！ |
 | **$S_6$ (中轴跨仓枢纽店)**<br>*(由 $W_2$ 供货，夹在 $S_5, S_7$ 中间)* | • 平稳期 (3天)<br>• 虹吸期 (16天)<br>• **溢出期 (8天)** | 5.35%<br>**25.78%**<br>**20.81%** | 4.94%<br>23.28%<br>17.30% | 4.14%<br>3.97%<br>7.24% | 3.71%<br>**3.76%**<br>7.03% | **3.15%**<br>7.21%<br>**3.92%** | 全网最忙十字路口：16 天被两侧大促虹吸，8 天承接两侧断货溢出。图网络稳健救回 3%–4% 区间。 |
 | **$S_8$ (西区同仓对照店)**<br>*(与 $S_9, S_{10}$ 同属 $W_2$ 供货)* | • **平稳期 (12天)**<br>• 虹吸期 (11天)<br>• 溢出期 (4天) | **3.25%**<br>6.06%<br>47.15% | 3.68%<br>7.04%<br>46.85% | 3.33%<br>6.04%<br>2.15% | **3.22%**<br>**6.02%**<br>4.52% | 3.72%<br>6.28%<br>**1.53%** | 近一半时间处于平稳期，单店模型平稳期误差仅 **3.25%**，图网络在溢出期压至 **1.53%**。 |
 
@@ -448,15 +492,15 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 ### 3. 业务案例与系统鲁棒性深度剖析
 
 1. **十字路口交界店的物理宿命（图 7 热力图全景）**：
-   在图 7 展现的 10 门店全景热力图中，单店去截断模型在常规平稳期表现亮眼（全网呈现 3%–5% 的浅淡米黄色低温区），但在跨店断货溢出期，$S_1\text{--}S_4$ 和 $S_6$ 瞬间爆发为刺眼的深橙红火苗（WAPE 达 20%–47%）。
-   - **$S_4$ 与 $S_6$ 的特殊性**：它们是典型的**跨仓交界枢纽**。当 $W_1$ 仓库断货导致周边邻店货架空空如也时，顾客在步行 500 米内自然涌入有货的 $S_4$ 和 $S_6$。单店模型因为看不到邻店上游仓库状态，发生系统性严重漏报（负偏高达 -25% 至 -30%）；而端到端图神经网络（GNN）将热力图全列压平为安全低温的浅淡米黄色（各店稳定在 2.9%–5.2%）。
+   在图 7 展现的 10 门店全景热力图中，单店去截断模型在常规平稳期表现亮眼（全网呈现 3%–5% 的浅淡米黄色低温区），但在跨店断货溢出期， $S_1\text{--}S_4$ 和 $S_6$ 瞬间爆发为刺眼的深橙红火苗（WAPE 达 20%–47%）。
+   - **$S_4$ 与 $S_6$ 的特殊性**：它们是典型的**跨仓交界枢纽**。当 $W_1$ 仓库断货导致周边邻店货架空空如也时，顾客在步行 500 米内自然涌入有货的 $S_4$ 和 $S_6$ 。单店模型因为看不到邻店上游仓库状态，发生系统性严重漏报（负偏高达 -25% 至 -30%）；而端到端图神经网络（GNN）将热力图全列压平为安全低温的浅淡米黄色（各店稳定在 2.9%–5.2%）。
 2. **数据质量是图模型的生命线（幽灵库存与报表延迟）**：
    表 3B 的敏感性测试给工业界算法团队敲响了警钟：**图模型是高度依赖上下游信号质量的精密仪器**。
    - 现场一旦发生“幽灵库存”（即门店实际缺货但店员未在 PDA 扫码标记，导致系统误以为有货），漏记率达到 30% 时，两跳图模型的溢出期误差即由 **3.95% 剧烈恶化至 22.49%**，相比单店模型的优势荡然无存；
    - 同样，如果上游仓库的管理报表延迟一天同步，图网络拿昨日旧黄历计算今天的客流转移，溢出期误差立刻反弹至 **20.39%**。因此，**在建设图算法之前，必须优先夯实供应链实时报表与缺货扫码基建**。
 3. **网络故障隔离与 3-Sigma 熔断器设计**：
-   工业落地最担忧“单点故障引发连锁雪崩”。当在 $S_5$ 注入虚假 10 倍促销信号时，未设防的图网络确实将污染沿着空间边传递给紧邻的 $S_6$（误差升至 48%）和 $S_7$（升至 43%）。
-   - 但两项事实证明了系统的可控性：其一，**物理空间距离构成了天然防火墙**，远端东区与西区门店误差完全为零恶化；其二，在各店消息聚合处增设 **$3\sigma$ 动态残差截断熔断开关**，一旦邻居消息偏离历史分布 3 倍方差，系统立即将该邻居权重降权或隔离，同商圈邻店误差瞬间被止损压回 10%–15% 安全线。
+   工业落地最担忧“单点故障引发连锁雪崩”。当在 $S_5$ 注入虚假 10 倍促销信号时，未设防的图网络确实将污染沿着空间边传递给紧邻的 $S_6$ （误差升至 48%）和 $S_7$ （升至 43%）。
+   - 但两项事实证明了系统的可控性：其一，**物理空间距离构成了天然防火墙**，远端东区与西区门店误差完全为零恶化；其二，在各店消息聚合处增设 **${3}\sigma$ 动态残差截断熔断开关**，一旦邻居消息偏离历史分布 3 倍方差，系统立即将该邻居权重降权或隔离，同商圈邻店误差瞬间被止损压回 10%–15% 安全线。
 
 ---
 
@@ -552,7 +596,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
 >   - **Tier 1B（单店去截断层，深蓝）**：NumPy 闭式解仅需 0.0007s，但受制于单店视野盲区，溢出期误差定格在 22.3%；
 >   - **Tier 2（一阶空间宽表层，橙色）**：LightGBM 与 XGBoost 耗时约 0.10s–0.26s，利用直方图贪心切分自动找回 60% 溢出红利（误差压缩至 10.4%–10.9%）；
 >   - **Tier 3（双层异构图模型层，紫红）**：端到端连续图神经网络耗时 1.17s，打破阶梯常数天花板，将溢出期误差彻底砸至 3.26% 理论上限。
-> - **(b) 右图（四层工具生态定位）**：自底向上阐明工业界不同工具解决的工程抽象层次——① NumPy/SciPy 零开销解析基准 $\to$ ② LightGBM/XGBoost 开箱即用树模型与时序宽表接口 $\to$ ③ PyG/DGL 可定制异构图消息传递算子 $\to$ ④ LibCity/Benchmarks 标准化时空评测流水线。说明工具选型本质是解决不同层次工程抽象的权衡。
+> - **(b) 右图（四层工具生态定位）**：自底向上阐明工业界不同工具解决的工程抽象层次——① NumPy/SciPy 零开销解析基准 → ② LightGBM/XGBoost 开箱即用树模型与时序宽表接口 → ③ PyG/DGL 可定制异构图消息传递算子 → ④ LibCity/Benchmarks 标准化时空评测流水线。说明工具选型本质是解决不同层次工程抽象的权衡。
 
 结合博文 [《5.5 工具包评测：信息结构比框架名称更重要》](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/#55-%E5%B7%A5%E5%85%B7%E5%8C%85%E8%AF%84%E6%B5%8B%E4%BF%A1%E6%81%AF%E7%BB%93%E6%9E%84%E6%AF%94%E6%A1%86%E6%9E%B6%E5%90%8D%E7%A7%B0%E6%9B%B4%E9%87%8D%E8%A6%81) 的理论思考与上述四个实验的实测数据，我们可以从**计算耗时、工程代价与精度收益**三个维度建立清晰的选型认知：
 
@@ -567,7 +611,7 @@ $$y(t) = g(t) + s_{\mathrm{weekly}}(t) + s_{\mathrm{yearly}}(t) + h(t) + \sum_{k
   - 在全量评测中，基于正规方程的线性回归（`np.linalg.lstsq`）和带正则项的图消息解（`np.linalg.solve`）单次拟合耗时仅在 **0.0002s – 0.005s** 之间；
   - 零超参数调优、零随机种子波动、零显存占用，且提供具备严密因果解释的物理系数；
 - **致命瓶颈（无法自动挖掘非线性，依赖人工手推）**：
-  - 如果面对多重断货与大促的非线性交互，NumPy 闭式解要求算法工程师必须提前**推导解析公式并手动构造出 9 维消息交叉向量**（如 $L4$）；一旦特征维度升至数十维且交互关系未知，人工穷举交叉项将引发特征组合爆炸并导致矩阵求逆过拟合。
+  - 如果面对多重断货与大促的非线性交互，NumPy 闭式解要求算法工程师必须提前**推导解析公式并手动构造出 9 维消息交叉向量**(如 $L4$)；一旦特征维度升至数十维且交互关系未知，人工穷举交叉项将引发特征组合爆炸并导致矩阵求逆过拟合。
 
 #### 3) 现代工业级树模型工具包（LightGBM & XGBoost）的核心价值
 
