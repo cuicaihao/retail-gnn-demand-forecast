@@ -1,186 +1,189 @@
-# Retail GNN Demand Forecast (零售图神经网络需求预测)
+# Retail Network Demand Forecasting: From Single-Store Baselines to Heterogeneous Spatio-Temporal GNNs
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Blog Post](https://img.shields.io/badge/Blog-cuicaihao.github.io-brightgreen.svg)](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)
+[![Technical Report](https://img.shields.io/badge/Technical_Report-experimental--report.md-blue.svg)](experimental-report.md)
 
-本项目是技术深度长文**《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》**（[中文博文](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/) / [English Post](https://cuicaihao.github.io/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)）第四章实验代码的官方复现开源仓库。
+本项目是技术深度长文**《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》**（[中文博文](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/) / [English Post](https://cuicaihao.github.io/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)）与姊妹篇《[用 Prophet 做零售需求预测](https://cuicaihao.github.io/zh/posts/2026-10-01-prophet-retail-demand-forecast/)》配套的开源科学实验工程套件。
 
-本文针对连锁零售网络中普遍存在的**空间近邻促销虹吸（负外部性）**与**跨仓断货客流溢出（正外部性）**，构建了一套严格无未来泄漏（No Future Data Leakage）的受控合成实验环境（2 座仓库、10 家门店、3 个商圈，涵盖 1,096 天），并系统对比了**单店模型（Naive / Uncensored OLS、Prophet、Darts）**、**一阶邻域宽表特征（1-Hop Flat OLS、Prophet `add_regressor`）**与**两跳时空图架构（Analytical ST-GNN、PyG Temporal、LibCity）**的拟合能力与工程开销。
+项目聚焦多仓多店零售网络中的核心冲突——**近邻促销负向虹吸**与**跨仓断货正向溢出**，构建了严格无信息泄漏的受控仿真沙盒与四大递进实验，并在三大真实公开工业级基准（**叮咚买菜 FreshRetailNet-50K**、**Kaggle Corporación Favorita**、**Walmart M5**）上进行了端到端实测验证。
 
 ---
 
 ## 目录
 
-- [一、核心结论与实验发现](#一核心结论与实验发现)
-- [二、网络拓扑与四层数据生成机制 (DGP)](#二网络拓扑与四层数据生成机制-dgp)
-- [三、评测指标与复现记分牌](#三评测指标与复现记分牌)
-  - [表 1：全网整体性能对比 (Overall Test Performance)](#表-1全网整体性能对比-overall-test-performance)
-  - [表 2：三大业务场景消融分析 (Regime Ablation on $D^{\mathrm{sim}}$)](#表-2三大业务场景消融分析-regime-ablation-on-dmathrmsim)
-  - [表 3：全景工具库横向评测评分卡 (Multi-Toolkit Scorecard)](#表-3全景工具库横向评测评分卡-multi-toolkit-scorecard)
-- [四、图表全景 (Publication Figures)](#四图表全景-publication-figures)
-- [五、仓库结构](#五仓库结构)
-- [六、快速开始 (Quickstart)](#六快速开始-quickstart)
-- [七、引用与博文链接](#七引用与博文链接)
+- [一、核心结论速览 (Executive Summary)](#一核心结论速览-executive-summary)
+- [二、现代模块化仓库架构](#二现代模块化仓库架构)
+- [三、快速开始 (Quickstart)](#三快速开始-quickstart)
+  - [1. 环境安装](#1-环境安装)
+  - [2. 自动下载三大真实公开数据](#2-自动下载三大真实公开数据)
+  - [3. 一键运行全量实验套件](#3-一键运行全量实验套件)
+  - [4. 单独运行指定子实验](#4-单独运行指定子实验)
+  - [5. 启动交互式 Notebook](#5-启动交互式-notebook)
+- [四、详细技术实验报告与业务故事](#四详细技术实验报告与业务故事)
+- [五、数据产物持久化与绘图解耦设计](#五数据产物持久化与绘图解耦设计)
+- [六、历史版本归档说明 (Archive)](#六历史版本归档说明-archive)
+- [七、引用与关联阅读](#七引用与关联阅读)
 
 ---
 
-## 一、核心结论与实验发现
+## 一、核心结论速览 (Executive Summary)
 
-1. **信息边界决定精度上限，调包救不了物理盲区**：
-   在单店信息层级内部，无论使用 $0.005\,\text{s}$ 的闭式 OLS、还是花费数十秒拟合的 Meta Prophet 与 Darts，全量 WAPE 均卡死在 **13.78%–13.98%**，且在断货溢出期均发生 **-22.2%** 至 **-22.4%** 的严重低估；只有打通“仓库 $\to$ 邻店 $\to$ 本店”的两跳异构图架构，才能一举将全量 WAPE 压低至 **3.79%–3.82%**（溢出期降至约 **4.0%**）。
-2. **场景决定是否值得上图模型**：
-   在无跨实体扰动的**常规平稳期**，单店去截断模型已达 **3.73%** WAPE，图模型增量微乎其微（2.74%）；图架构的核心价值完全集中在识别**邻店促销负向虹吸（+5.72% 偏差反转）**与**上游瘫痪正向溢出（-22.24% 偏差挽回）**两类动态网络冲击。
-3. **闭式解析解（Analytical GNN）的极低开销**：
-   本仓库实现了基于最小二乘矩阵变换的两跳图解析解（$0.015\,\text{s}$），无需安装 PyTorch / CUDA 即可达到与深度时空图网络完全一致的预测表现。
+![零售网络异构图与空间转移矩阵](figures/retail_network_topology.png)
 
----
+1. **信息边界决定精度上限，盲目调包无法突破物理盲区**：
+   在单店信息孤岛下，不论使用毫秒级闭式 OLS、还是花费数十秒拟合的 Meta Prophet 或 Darts，常规平稳期虽可达 3.7% WAPE，但在跨店断货溢出期均发生 **-22% 的严重低估漏报**。只有打通“仓库 $\to$ 邻店 $\to$ 本店”的两跳异构拓扑，溢出期误差才能骤降至 **3.26%–3.95%**。
 
-## 二、网络拓扑与四层数据生成机制 (DGP)
+![各业务子场景 WAPE 与系统性偏差 Bias 对比](figures/regime_ablation_metrics.png)
 
-零售网络拓扑定义为异构有向加权图 $G = (\mathcal{V}^{\mathrm{W}} \cup \mathcal{V}^{\mathrm{S}}, \mathcal{E}^{\mathrm{sup}} \cup \mathcal{E}^{\mathrm{spa}})$：
+2. **树模型双雄是工业级强基线，能自主吃透大部分非线性组合**：
+   当把“本店信息 + 邻居大促 + 邻居上游仓断货比例”并排铺平为 18 维宽表交给 GBDT（LightGBM 与 XGBoost）时，决策树无需人工显式相乘，仅凭分支判断即可将溢出期误差从 21.11% 压缩到 **10.38%（XGBoost）与 10.91%（LightGBM）**，自主追回近六成差距。两款引擎学出的前列特征高度自洽。
 
-- **节点集合**：仓库 $\mathcal{V}^{\mathrm{W}} = \{W_1, W_2\}$，门店 $\mathcal{V}^{\mathrm{S}} = \{S_1, \dots, S_{10}\}$，分布在 Cluster A（东区高密）、Cluster B（中轴走廊）、Cluster C（西区中心）。
-- **跨仓枢纽门店**：$S_4$ 与 $S_6$ 物理上紧邻由 $W_1$ 供货的门店，但后台货源挂在 $W_2$ 下，承担跨仓风险对冲与客流承接角色。
-- **空间随机游走转移矩阵**：
-  $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot \mathbb{I}(0 < d_{ij} \le 3.5\text{ km}), \qquad \mathbf{P}^{\mathrm{spa}} = (\mathbf{D}^{\mathrm{spa}})^{-1}\mathbf{A}^{\mathrm{spa}}$$
+![三大真实公开基准评测对比](figures/public_benchmarks_comparison.png)
 
-数据生成严格包含四层物理机制：
-
-1. **仓库状态马尔可夫链** $Z_{w,t}^{\mathrm{wh}} \in \{0, 1, 2\}$ 与 1 天物流提前期决定次日门店库存供给配额 $V_{i,t}$（999 / 95 / 50 件）。
-2. **异步错峰促销日历** $q_{i,t} \in \{0, 0.20, 0.35\}$ 与单店基准需求 $\mu_{i,t}^{\mathrm{self}}$。
-3. **符号翻转空间耦合**：邻店健康大促导致虹吸流失 $-C_{i,t}$（按行读取 $P_{ij}^{\mathrm{spa}}$）；邻店断货导致被动溢出流入 $+L_{i,t}$（按列读取 $P_{ji}^{\mathrm{spa}}$，转化率 $\eta = 0.85$）。
-4. **营业约束与库存截断**：闭店日 $O_{i,t}=0$ 强制销量归零；营业日观测 POS 销量为 $y_{i,t}^{\mathrm{sales}} = \mathrm{round}(\min(D_{i,t}^{\mathrm{sim}}, V_{i,t}))$。
+3. **真实世界的“三阶梯落地定律”与工具包选型**：
+   - **高密生鲜网格（FreshRetailNet-50K）**：真实营业期缺货达 30.8%，去截断模型与全网池化（27.02%）表现最稳，树模型中 XGBoost（32.17%）优于 LightGBM（36.20%），交界仓上图网络保持领先；
+   - **连锁大型商超（Favorita）**：缺失显式缺货记录，核心驱动力转为发薪日大促脉冲，**XGBoost (12.11%) 斩获全场第一，与图模型 (12.99%) 和 LightGBM (13.19%) 并驾齐驱**；
+   - **远距离跨州卖场（Walmart M5）**：跨州无跑单客流，本地日历占绝对主导，**极简的一阶线性模型仅用 0.0006 秒（13.95%）全面反超复杂的树模型与图模型**。
 
 ---
 
-## 三、评测指标与复现记分牌
-
-评估测试集为最后 28 天（`2025-12-04` 至 `2025-12-31`，剔除闭店日后共 270 个有效门店日）。
-评估指标采用 WMAPE（加权绝对百分比误差）、MAE（平均绝对误差）与 Bias（系统性相对偏差）：
-
-### 表 1：全网整体性能对比 (Overall Test Performance)
-
-> 格式：`WMAPE / MAE / Bias`
-
-| 参评模型 (Evaluated Model) | 无噪声条件均值 $\mu^{\mathrm{open}}$ | 潜在真实需求 $D^{\mathrm{sim}}$ | 实际观测销量 $y^{\mathrm{sales}}$ |
-| :--- | :---: | :---: | :---: |
-| **1A. 单店全量 (Naive OLS)** | 17.62% / 19.97 / -13.97% | 18.14% / 20.54 / -13.87% | 21.14% / 20.45 / +0.78% |
-| **1B. 单店去截断 (Uncensored OLS)** | 12.99% / 14.72 / -5.74% | 13.78% / 15.59 / -5.63% | 20.02% / 19.37 / +10.43% |
-| **2. 一阶邻域特征 (1-Hop Flat)** | 11.79% / 13.36 / -5.17% | 12.75% / 14.43 / -5.06% | 14.40% / 13.93 / +0.17% |
-| **3. 两层解析图模型 (Analytical Graph)** | **1.92% / 2.17 / -1.01%** | **3.79% / 4.29 / -0.90%** | **3.18% / 3.08 / -0.21%** |
-
-### 表 2：三大业务场景消融分析 (Regime Ablation on $D^{\mathrm{sim}}$)
-
-> 格式：`WMAPE (Bias)`
-
-| 业务状态子场景 (Test Regimes) | 样本量 | 1A. 单店全量 | 1B. 单店去截断 | 2. 一阶邻域特征 | 3. 两层解析图 |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **常规平稳期 (Normal)** | 57 门店日 | 13.50% (-13.50%) | **3.73% (+0.05%)** | 4.06% (+1.72%) | **2.74% (+0.11%)** |
-| **邻店促销虹吸期 (Cannibalization)** | 142 门店日 | 10.13% (+0.35%) | 11.40% (+5.72%) | 10.15% (+4.79%) | **4.24% (+0.62%)** |
-| **跨店断货溢出期 (Spillover)** | 88 门店日 | 29.23% (-29.23%) | 22.35% (-22.24%) | 21.11% (-20.65%) | **3.95% (-3.17%)** |
-
-### 表 3：全景工具库横向评测评分卡 (Multi-Toolkit Scorecard)
-
-> 针对潜在真实需求 $D^{\mathrm{sim}}$ 计算
-
-| 层级与参评工具 (Tier & Toolkit) | 单次耗时 | 全量 / 平稳 WAPE | 虹吸 WAPE (Bias) | 溢出 WAPE (Bias) |
-| :--- | :---: | :---: | :---: | :---: |
-| **1B 单店** · Formula OLS | **0.005s** | 13.78% / 3.73% | 11.40% (+5.7%) | 22.35% (-22.2%) |
-| **1B 单店** · Meta Prophet | 25.4s | 13.98% / 3.84% | 11.73% (+5.6%) | 22.43% (-22.4%) |
-| **1B 单店** · Darts | 12.1s | 13.78% / 3.73% | 11.40% (+5.7%) | 22.35% (-22.2%) |
-| **2 一阶** · 1-Hop Flat OLS | **0.010s** | 12.75% / 4.06% | 10.15% (+4.8%) | 21.11% (-20.7%) |
-| **2 一阶** · Prophet `add_regressor` | 38.6s | 12.89% / 4.09% | 10.48% (+4.9%) | 21.08% (-20.7%) |
-| **3 两跳图** · ST-GNN 解析解 | **0.015s** | **3.79% / 2.74%** | **4.24% (+0.6%)** | **3.95% (-3.2%)** |
-| **3 两跳图** · PyG Temporal | 4.8s | **3.82% / 2.74%** | **4.24% (+0.6%)** | **3.98% (-3.2%)** |
-| **3 两跳图** · LibCity | 18.5s | **3.80% / 2.74%** | **4.24% (+0.6%)** | **3.96% (-3.2%)** |
-
----
-
-## 四、图表全景 (Publication Figures)
-
-本项目生成的所有高清图表均提供双语版本（中文版 `.png` / `.zh.webp` 与英文版 `_en.png` / `.en.webp`）：
-
-| 序号 | 中文高清图预览 | 英文对应图 | 内容说明 |
-| :---: | :--- | :--- | :--- |
-| **图 1** | ![Fig 1](figures/retail_network_topology.png) | [Fig 1 (EN)](figures/retail_network_topology_en.png) | 2 仓 10 店异构网络拓扑与块对角空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ |
-| **图 2** | ![Fig 2](figures/all_stores_sales_panorama.png) | [Fig 2 (EN)](figures/all_stores_sales_panorama_en.png) | 全网 10 家门店观测销量与潜在需求全景（2025 下半年） |
-| **图 3** | ![Fig 3](figures/single_store_decomposition.png) | [Fig 3 (EN)](figures/single_store_decomposition_en.png) | 单店需求结构微观拆解：S1 截断损失 vs S6 溢出峰值 |
-| **图 4** | ![Fig 4](figures/store_timeseries_comparison.png) | [Fig 4 (EN)](figures/store_timeseries_comparison_en.png) | 测试集 28 天相邻门店（S5 断货截断与 S6 跨仓承接）耦合轨迹 |
-| **图 5** | ![Fig 5](figures/regime_ablation_metrics.png) | [Fig 5 (EN)](figures/regime_ablation_metrics_en.png) | 三大业务子场景 WAPE 与 Bias（符号翻转）消融分析 |
-| **图 6** | ![Fig 6](figures/multitool_benchmark_tradeoff.png) | [Fig 6 (EN)](figures/multitool_benchmark_tradeoff_en.png) | 耗时 vs 溢出期 WAPE 帕累托前沿及四层工具抽象生态 |
-
----
-
-## 五、仓库结构
+## 二、现代模块化仓库架构
 
 ```text
 retail-gnn-demand-forecast/
-├── CASE_DESIGN.md                  # 详细案例数学推导与实验参数设计文档
-├── README.md                       # 项目主文档（本文件）
-├── pyproject.toml                  # uv 项目配置与依赖分组
-├── uv.lock                         # 锁定依赖版本
-├── requirements.txt                # pip 兼容的核心依赖清单
-├── retail_gnn_benchmark.py         # 核心基准代码（DGP生成、OLS消融、多工具评测与表格打印）
-├── generate_figures.py             # 双语出版级图表生成器 (PNG + WebP，共 24 个文件)
-├── retail_gnn_demand_forecast.ipynb# 完整复现与交互式探索 Jupyter Notebook (带预执行结果)
-├── data/
-│   └── retail_network_2023_2025.csv# 生成的仿真数据集 (10,960 行，四位精度真值)
-└── figures/                        # 生成的双语图表目录 (12 张 PNG + 12 张 WebP)
-    ├── retail_network_topology[.png / _en.png / .zh.webp / .en.webp]
-    ├── all_stores_sales_panorama[...]
-    ├── single_store_decomposition[...]
-    ├── store_timeseries_comparison[...]
-    ├── regime_ablation_metrics[...]
-    └── multitool_benchmark_tradeoff[...]
+├── README.md                                  # 项目概览与快速启动指南
+├── experimental-report.md                     # 完整的技术报告、数学规范与全量数据表
+├── pyproject.toml                             # uv / pip 现代化项目依赖配置
+├── requirements.txt                           # 核心依赖清单
+├── retail_gnn_demand_forecast.ipynb           # 轻量化（29KB）交互式复现 Notebook
+│
+├── src/                                       # 核心算法与数据处理引擎
+│   ├── data_generator.py                      # 4 层耦合零售网络沙盒（FSM / 马尔可夫双仓 / 空间转移）
+│   ├── feature_builders.py                    # 统一特征构造器（L0..L4、GBDT 11d/18d/27d、GNN 张量）
+│   ├── models_linear.py                       # 线性正规方程求解器与 Right-Censored Tobit MLE
+│   ├── models_tree.py                         # 树模型引擎（支持原生 LightGBM、XGBoost 与纯 NumPy 降级）
+│   ├── models_gnn.py                          # 端到端两层异构图神经网络（纯 NumPy Adam 优化，5 随机种子）
+│   ├── real_data_loader.py                    # 三大真实公开数据集提取与 10 门店网络抽取流水线
+│   └── evaluation.py                          # WAPE / MAE / Bias 业务场景切片（Overall/Normal/Cannib/Spill）
+│
+├── experiments/                               # 四大独立科学实验主程序
+│   ├── exp1_linear_feature_ablation.py        # 实验一：线性特征与样本池化消融阶梯 (L0 -> L4)
+│   ├── exp2_model_family_benchmark.py         # 实验二：跨模型家族全网大比拼 + 零耦合负对照 + 相图扫描
+│   ├── exp3_store_regime_breakdown.py         # 实验三：10 店场景拆解 + 幽灵库存退化 + 10 倍故障注入与熔断
+│   └── exp4_public_real_datasets.py           # 实验四：三大真实公开基准（FRN-50K / Favorita / M5）实测
+│
+├── scripts/                                   # 工具与一键运行入口
+│   ├── download_real_benchmarks.py            # 真实公开数据集断点续传下载器 (HuggingFace 镜像免鉴权)
+│   ├── run_all_experiments.py                 # 全套实验一键主执行总控程序 (约 17 秒跑通全部实验)
+│   └── plot_all_figures.py                    # 解耦绘图主脚本：读取 results/plot_data/*.csv 生成中英高清图表
+│
+├── data/                                      # 数据底座
+│   ├── retail_network_2023_2025.csv           # 仿真 10 店 × 1,096 天完整数据集 (10,960 行)
+│   └── public_benchmarks/                     # 清洗提取后的三大基准标准宽表 (FRN-50K / Favorita / M5)
+│       └── raw/                               # [已 gitignore] 下载的原始 parquet 与 csv 缓存
+│
+├── results/                                   # 实验全量数值产物（完全解耦持久化）
+│   ├── metrics/                               # 14 张核心指标统计 CSV（精确到小数后三位）
+│   ├── plot_data/                             # 9 张专供 Matplotlib/Seaborn 绘图的纯静态 CSV (plot_fig1..fig9)
+│   └── predictions/                           # 测试集逐店逐日预测原始明细流水表
+│
+├── figures/                                   # 出版级中英双语信息图 (36 张 PNG + WebP)
+└── archive/                                   # 历史遗留单文件脚本与旧版 Notebook 归档
 ```
 
 ---
 
-## 六、快速开始 (Quickstart)
+## 三、快速开始 (Quickstart)
 
-### 1. 环境准备
+### 1. 环境安装
 
-推荐使用 Python 3.10+ 和 [uv](https://docs.astral.sh/uv/) 管理虚拟环境及依赖：
+推荐使用 Python 3.10+ 与 [uv](https://docs.astral.sh/uv/) 工具链：
 
 ```bash
 git clone https://github.com/cuicaihao/retail-gnn-demand-forecast.git
 cd retail-gnn-demand-forecast
 
-uv sync
+# 使用 uv 安装核心运行依赖
+uv pip install -r requirements.txt
 ```
 
-`uv sync` 会在项目目录创建 `.venv` 并安装核心依赖。需要运行全景 benchmark 或打开 Notebook 时，按需安装对应依赖：
+### 2. 自动下载三大真实公开数据
 
 ```bash
-uv sync --extra benchmark
-uv sync --extra notebook
+# 从免鉴权公共镜像下载 FreshRetailNet-50K、Favorita 与 Walmart M5
+python scripts/download_real_benchmarks.py
 ```
 
-也可以继续通过 `pip install -r requirements.txt` 安装核心依赖。
-
-### 2. 一键运行全量基准与图表生成
-
-运行主程序，将在命令行输出第四章所有表格，并在 `data/` 和 `figures/` 下输出所有数据与高清图：
+### 3. 一键运行全量实验套件与图表生成
 
 ```bash
-uv run python retail_gnn_benchmark.py
+# 一键导出解耦绘图数据并运行全部实验 1 -> 4（整套流水线耗时仅约 17 秒）
+python scripts/run_all_experiments.py
+
+# 附带 --plot 标志可同时一键生成全部出版级中英文高清图表 (PNG & WebP)
+python scripts/run_all_experiments.py --plot
+
+# 或随时通过解耦绘图脚本从 results/plot_data/ 独立渲染图表
+python scripts/plot_all_figures.py --lang both
 ```
 
-### 3. 打开 Jupyter Notebook 进行逐节验证
+### 4. 单独运行指定子实验
 
 ```bash
-uv run --extra notebook jupyter notebook retail_gnn_demand_forecast.ipynb
+python experiments/exp1_linear_feature_ablation.py  # 运行实验一：线性特征与合账本消融
+python experiments/exp2_model_family_benchmark.py   # 运行实验二：跨模型家族对比与负对照
+python experiments/exp3_store_regime_breakdown.py   # 运行实验三：门店全景体检与故障注入
+python experiments/exp4_public_real_datasets.py     # 运行实验四：三大真实工业公开基准
+```
+
+### 5. 启动交互式 Notebook
+
+```bash
+# 启动轻量自包含 Notebook 进行逐节验证
+jupyter notebook retail_gnn_demand_forecast.ipynb
 ```
 
 ---
 
-## 七、引用与博文链接
+## 四、详细技术实验报告与业务故事
 
-如果您在研究或工程落地中参考了本项目的设计方案，欢迎查阅并引用原博文：
+为保持项目主页的整洁凝练，全部深度的数学推导、数据生成规范、逐店透视细分表与零售门店业务故事已移至独立的技术报告文档：
 
-- **深度博文**：[《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)
+👉 **[experimental-report.md](experimental-report.md)**
+
+技术报告完整包含：
+
+- **零、零售网络拓扑与四层数据生成过程（DGP）数学推导**；
+- **一、实验一：线性特征消融阶梯（$L0 \dots L4$）详细成绩单与三则零售故事**；
+- **二、实验二：跨模型家族全网大比拼（GBDT 特征重要度、GNN 连续外推机制与负对照）**；
+- **三、实验三：10 家门店全景体检透视（表 3A/3B/3C、幽灵库存退化与 10 倍故障熔断止损）**；
+- **四、实验四：三大真实公开数据集评测总表与全部 30 家门店逐店 WAPE 表现明细**；
+- **五、真实世界的“三阶梯落地定律”与生产技术选型指南**。
+
+---
+
+## 五、数据产物持久化与绘图解耦设计
+
+本工程贯彻**数据计算与图表绘制完全解耦**的设计理念：
+
+- **统计指标表格**：[`results/metrics/`](results/metrics/) 下保存了 14 张高精度统计表，支持对每个百分比进行审计核对。
+- **绘图解耦数据**：[`results/plot_data/`](results/plot_data/) 下保存了 `plot_fig1` 至 `plot_fig9` 的静态宽表，可直接被绘图脚本读取渲染。
+- **预测流水明细**：[`results/predictions/synth_test_predictions_all_models.csv`](results/predictions/synth_test_predictions_all_models.csv) 保存了全量原始预测值。
+
+---
+
+## 六、历史版本归档说明 (Archive)
+
+在 [`archive/`](archive/) 目录中保存了早期版本（v1/v2）的单体脚本（`retail_gnn_benchmark.py`、`generate_figures.py`）以及内嵌图片的旧版 Notebook（`retail_gnn_demand_forecast_v1.ipynb`），供历史追溯与版本比对。最新生产代码请统一使用 `src/` 与 `experiments/`。
+
+---
+
+## 七、引用与关联阅读
+
+- **深度技术长文**：[《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)
 - **English Post**: [Retail Demand Forecasting with Graph Neural Networks: Mathematical Principles, Controlled Experiments, and Production Reality Check](https://cuicaihao.github.io/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)
-- **系列关联文章**：
+- **系列前序文章**：
   - [《用 Prophet 做零售需求预测：从模型原理到工程实践》](https://cuicaihao.github.io/zh/posts/2026-10-01-prophet-retail-demand-forecast/)
   - [《从一棵树到一片森林：树模型的数学原理、算法演进与工程实践》](https://cuicaihao.github.io/zh/posts/2026-10-17-from-a-single-tree-to-a-forest-mathematical-principles-algorithmic-evolution-and-engineering-practices-of-tree-models/)

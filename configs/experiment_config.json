@@ -1,0 +1,226 @@
+{
+  "project_name": "retail-gnn-demand-forecast",
+  "version": "2.0.0",
+  "random_seeds": [
+    42,
+    101,
+    202,
+    303,
+    404
+  ],
+  "primary_seed": 42,
+  "time_horizon": {
+    "start_date": "2023-01-01",
+    "end_date": "2025-12-31",
+    "total_days": 1096,
+    "train_days": 1068,
+    "test_days": 28,
+    "test_start_date": "2025-12-04",
+    "test_end_date": "2025-12-31"
+  },
+  "network_topology": {
+    "n_warehouses": 2,
+    "n_stores": 10,
+    "spatial_radius_km": 3.5,
+    "spatial_kernel_sigma_km": 2.0,
+    "cannibalization_beta": 125.0,
+    "spillover_eta": 0.85,
+    "noise_sigma": 4.5,
+    "stores": {
+      "S1": {
+        "cluster": "Cluster_A_East",
+        "warehouse": "W1",
+        "role": "Core_W1",
+        "coords": [
+          2.0,
+          8.0
+        ]
+      },
+      "S2": {
+        "cluster": "Cluster_A_East",
+        "warehouse": "W1",
+        "role": "Core_W1",
+        "coords": [
+          3.0,
+          8.4
+        ]
+      },
+      "S3": {
+        "cluster": "Cluster_A_East",
+        "warehouse": "W1",
+        "role": "Core_W1",
+        "coords": [
+          2.4,
+          7.0
+        ]
+      },
+      "S4": {
+        "cluster": "Cluster_A_East",
+        "warehouse": "W2",
+        "role": "Bridge_W2",
+        "coords": [
+          3.5,
+          7.3
+        ]
+      },
+      "S5": {
+        "cluster": "Cluster_B_Central",
+        "warehouse": "W1",
+        "role": "Flank_W1",
+        "coords": [
+          7.5,
+          5.0
+        ]
+      },
+      "S6": {
+        "cluster": "Cluster_B_Central",
+        "warehouse": "W2",
+        "role": "Bridge_W2",
+        "coords": [
+          8.3,
+          5.5
+        ]
+      },
+      "S7": {
+        "cluster": "Cluster_B_Central",
+        "warehouse": "W1",
+        "role": "Flank_W1",
+        "coords": [
+          8.8,
+          4.6
+        ]
+      },
+      "S8": {
+        "cluster": "Cluster_C_West",
+        "warehouse": "W2",
+        "role": "Control_W2",
+        "coords": [
+          14.0,
+          2.5
+        ]
+      },
+      "S9": {
+        "cluster": "Cluster_C_West",
+        "warehouse": "W2",
+        "role": "Control_W2",
+        "coords": [
+          15.0,
+          2.9
+        ]
+      },
+      "S10": {
+        "cluster": "Cluster_C_West",
+        "warehouse": "W2",
+        "role": "Control_W2",
+        "coords": [
+          14.4,
+          1.7
+        ]
+      }
+    }
+  },
+  "feature_dimensions": {
+    "L0_1A_Local_Naive": {
+      "active_dim_per_store": 7,
+      "design_matrix_cols": 7,
+      "total_free_params": 70,
+      "pooling": "Local_Per_Store",
+      "sample_filter": "All_Open_Days"
+    },
+    "L1_1B_Local_Uncensored": {
+      "active_dim_per_store": 7,
+      "design_matrix_cols": 7,
+      "total_free_params": 70,
+      "pooling": "Local_Per_Store",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "L1_Tobit_Censored_MLE": {
+      "active_dim_per_store": 7,
+      "design_matrix_cols": 7,
+      "total_free_params": 80,
+      "pooling": "Local_Per_Store",
+      "sample_filter": "All_Open_Days_Censored_Likelihood"
+    },
+    "L2a_1Bp_Pooled_Shared": {
+      "active_dim_per_store": 7,
+      "design_matrix_cols": 16,
+      "total_free_params": 16,
+      "pooling": "Pooled_Shared_Elasticity",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "L2b_1Bp_Pooled_BlockDiag": {
+      "active_dim_per_store": 7,
+      "design_matrix_cols": 70,
+      "total_free_params": 70,
+      "pooling": "Pooled_Store_Specific",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "L3_2_Linear_1Hop_Local": {
+      "active_dim_per_store": 9,
+      "design_matrix_cols": 9,
+      "total_free_params": 90,
+      "pooling": "Local_Per_Store",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "L3p_2_Linear_1Hop_Pooled": {
+      "active_dim_per_store": 9,
+      "design_matrix_cols": 72,
+      "total_free_params": 72,
+      "pooling": "Pooled_Shared_1Hop",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "L4_3_Analytical_2Hop_Graph": {
+      "active_dim_per_store": 16,
+      "design_matrix_cols": 79,
+      "total_free_params": 79,
+      "pooling": "Pooled_Shared_2Hop",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "Tree_GBDT_Base_NoGraph": {
+      "active_dim_per_store": 11,
+      "design_matrix_cols": 11,
+      "pooling": "Pooled_Global_Tree",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "Tree_GBDT_1Hop_Raw": {
+      "active_dim_per_store": 18,
+      "design_matrix_cols": 18,
+      "pooling": "Pooled_Global_Tree",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "Tree_GBDT_2Hop_Graph": {
+      "active_dim_per_store": 27,
+      "design_matrix_cols": 27,
+      "pooling": "Pooled_Global_Tree",
+      "sample_filter": "Uncensored_Open_Days"
+    },
+    "Neural_PyG_HeteroGNN_2Layer": {
+      "warehouse_node_dim": 3,
+      "store_node_dim": 8,
+      "hidden_dim": 16,
+      "layers": 2,
+      "readout_in_dim": 48,
+      "total_free_params": 1521,
+      "pooling": "Inductive_Graph_Message_Passing",
+      "sample_filter": "Uncensored_Open_Days"
+    }
+  },
+  "hyperparameters": {
+    "gbdt": {
+      "n_estimators": 180,
+      "learning_rate": 0.06,
+      "max_depth": 5,
+      "min_samples_leaf": 18,
+      "subsample": 0.85,
+      "colsample_bytree": 0.85
+    },
+    "neural_gnn": {
+      "hidden_dim": 16,
+      "num_layers": 2,
+      "activation": "ELU",
+      "learning_rate": 0.015,
+      "weight_decay": 0.0001,
+      "epochs": 350
+    }
+  }
+}

@@ -1,0 +1,8 @@
+model_id,scenario,D_wape,D_mae,D_bias,Mu_wape
+M1B_OLS_Uncens_7d,Negative_Control_Zero_Coupling,3.057,3.421,0.109,0.359
+M2_OLS_1Hop_9d,Negative_Control_Zero_Coupling,3.071,3.437,0.097,0.395
+M_GBDT_1Hop_Raw_18d,Negative_Control_Zero_Coupling,3.69,4.129,-2.216,2.449
+M_XGBoost_1Hop_Raw_18d,Negative_Control_Zero_Coupling,3.834,4.29,-2.319,2.532
+M_XGBoost_2Hop_Graph_27d,Negative_Control_Zero_Coupling,3.811,4.265,-2.329,2.547
+M3_Neural_HeteroGNN_2Layer,Negative_Control_Zero_Coupling,4.207,4.708,0.108,2.982
+M3_Analytical_2Hop_79d,Negative_Control_Zero_Coupling,3.093,3.461,0.144,0.406

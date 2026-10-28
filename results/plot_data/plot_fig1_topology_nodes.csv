@@ -1,0 +1,13 @@
+node_id,node_type,cluster,warehouse,role,x_km,y_km
+S1,Store,Cluster_A_East,W1,Core_W1,2.0,8.0
+S2,Store,Cluster_A_East,W1,Core_W1,3.0,8.4
+S3,Store,Cluster_A_East,W1,Core_W1,2.4,7.0
+S4,Store,Cluster_A_East,W2,Bridge_W2,3.5,7.3
+S5,Store,Cluster_B_Central,W1,Flank_W1,7.5,5.0
+S6,Store,Cluster_B_Central,W2,Bridge_W2,8.3,5.5
+S7,Store,Cluster_B_Central,W1,Flank_W1,8.8,4.6
+S8,Store,Cluster_C_West,W2,Control_W2,14.0,2.5
+S9,Store,Cluster_C_West,W2,Control_W2,15.0,2.9
+S10,Store,Cluster_C_West,W2,Control_W2,14.4,1.7
+W1,Warehouse,Supply_Center,W1,Supply_Center,5.2,9.8
+W2,Warehouse,Supply_Center,W2,Supply_Center,11.2,1.2

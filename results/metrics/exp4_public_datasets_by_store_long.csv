@@ -1,0 +1,211 @@
+dataset,store_id,cluster,model_id,engine,active_dim,fit_time_sec,WAPE,MAE,Bias
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,1A_Local_Naive,NumPy OLS,8,0.0003,27.94,33.93,-26.19
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,1A_Local_Naive,NumPy OLS,8,0.0003,25.11,49.37,-24.54
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,1A_Local_Naive,NumPy OLS,8,0.0003,24.34,26.54,-23.37
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,1A_Local_Naive,NumPy OLS,8,0.0003,43.54,41.98,-43.54
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,1A_Local_Naive,NumPy OLS,8,0.0003,22.03,19.01,-18.1
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,1A_Local_Naive,NumPy OLS,8,0.0003,28.14,53.49,-28.14
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,1A_Local_Naive,NumPy OLS,8,0.0003,29.55,30.0,-28.65
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,1A_Local_Naive,NumPy OLS,8,0.0003,30.14,20.84,-29.48
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,1A_Local_Naive,NumPy OLS,8,0.0003,24.58,34.89,-23.74
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,1A_Local_Naive,NumPy OLS,8,0.0003,15.15,16.45,-4.24
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,1B_Local_Uncensored,NumPy OLS,8,0.0002,27.94,33.93,-26.19
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,1B_Local_Uncensored,NumPy OLS,8,0.0002,25.11,49.37,-24.54
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,1B_Local_Uncensored,NumPy OLS,8,0.0002,24.71,26.95,2.85
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,1B_Local_Uncensored,NumPy OLS,8,0.0002,43.54,41.98,-43.54
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,1B_Local_Uncensored,NumPy OLS,8,0.0002,86.01,74.2,-86.01
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,1B_Local_Uncensored,NumPy OLS,8,0.0002,28.14,53.49,-28.14
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,1B_Local_Uncensored,NumPy OLS,8,0.0002,40.87,41.49,-40.51
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,1B_Local_Uncensored,NumPy OLS,8,0.0002,29.56,20.44,-15.84
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,1B_Local_Uncensored,NumPy OLS,8,0.0002,14.57,20.67,1.33
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,1B_Local_Uncensored,NumPy OLS,8,0.0002,15.15,16.45,-4.24
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,26.23,31.86,-26.16
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,34.94,68.69,-34.94
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,16.08,17.54,-7.17
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,17.65,17.01,-14.83
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,22.82,19.69,-21.49
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,37.99,72.23,-37.99
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,22.25,22.59,-17.88
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,17.71,12.25,0.01
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,30.49,43.28,-30.49
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,22.82,24.78,-21.26
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,25.76,31.28,-23.82
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,22.98,45.19,-21.43
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,38.2,41.66,27.76
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,48.41,46.67,-48.06
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,87.26,75.28,19.03
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,27.09,51.51,-26.98
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,50.31,51.07,-46.68
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,23.47,16.23,-10.52
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,97.48,138.37,-97.48
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0003,14.78,16.05,-1.47
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,28.33,34.41,-27.29
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,51.6,101.45,-51.6
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,22.45,24.48,-16.81
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,21.85,21.07,-21.35
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,26.36,22.74,-19.26
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,54.32,103.28,-54.32
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,30.33,30.79,-29.18
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,21.34,14.76,-17.89
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,41.43,58.81,-41.43
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.006,27.91,30.31,-27.14
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,29.05,35.28,-28.85
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,38.48,75.66,-38.48
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,27.99,30.53,-26.65
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,27.64,26.65,-25.38
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,30.67,26.46,-28.23
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,41.05,78.05,-41.05
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,32.65,33.14,-31.52
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,20.35,14.07,-17.74
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,30.77,43.68,-30.52
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0165,27.01,29.33,-25.92
+FreshRetailNet_50K,FRN_SH_01,Pudong_Core,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,43.78,53.17,-43.78
+FreshRetailNet_50K,FRN_SH_02,Pudong_Core,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,63.33,124.52,-62.71
+FreshRetailNet_50K,FRN_SH_03,Pudong_Core,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,26.12,28.49,2.42
+FreshRetailNet_50K,FRN_SH_04,Pudong_Bridge,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,57.38,55.32,-57.38
+FreshRetailNet_50K,FRN_SH_05,Puxi_Core,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,90.51,78.08,-90.51
+FreshRetailNet_50K,FRN_SH_06,Puxi_Bridge,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,21.42,40.73,6.92
+FreshRetailNet_50K,FRN_SH_07,Puxi_Core,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,35.3,35.84,-34.31
+FreshRetailNet_50K,FRN_SH_08,Minhang_Suburb,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,23.09,15.97,-6.09
+FreshRetailNet_50K,FRN_SH_09,Minhang_Suburb,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,27.05,38.4,19.77
+FreshRetailNet_50K,FRN_SH_10,Minhang_Suburb,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0011,44.59,48.42,-44.44
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,1A_Local_Naive,NumPy OLS,8,0.0002,15.58,15.47,3.15
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,1A_Local_Naive,NumPy OLS,8,0.0002,10.25,14.45,-0.04
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,1A_Local_Naive,NumPy OLS,8,0.0002,9.12,32.1,-1.95
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,1A_Local_Naive,NumPy OLS,8,0.0002,12.83,15.7,-0.94
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,1A_Local_Naive,NumPy OLS,8,0.0002,9.56,16.83,-6.83
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,1A_Local_Naive,NumPy OLS,8,0.0002,20.92,10.31,6.8
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,1A_Local_Naive,NumPy OLS,8,0.0002,20.95,14.37,-14.34
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,1A_Local_Naive,NumPy OLS,8,0.0002,17.45,22.34,14.95
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,1A_Local_Naive,NumPy OLS,8,0.0002,15.66,26.76,5.76
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,1A_Local_Naive,NumPy OLS,8,0.0002,17.15,20.55,11.53
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,1B_Local_Uncensored,NumPy OLS,8,0.0002,15.58,15.47,3.15
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,1B_Local_Uncensored,NumPy OLS,8,0.0002,10.25,14.45,-0.04
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,1B_Local_Uncensored,NumPy OLS,8,0.0002,9.12,32.1,-1.95
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,1B_Local_Uncensored,NumPy OLS,8,0.0002,12.83,15.7,-0.94
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,1B_Local_Uncensored,NumPy OLS,8,0.0002,9.56,16.83,-6.83
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,1B_Local_Uncensored,NumPy OLS,8,0.0002,20.92,10.31,6.8
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,1B_Local_Uncensored,NumPy OLS,8,0.0002,20.95,14.37,-14.34
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,1B_Local_Uncensored,NumPy OLS,8,0.0002,17.45,22.34,14.95
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,1B_Local_Uncensored,NumPy OLS,8,0.0002,15.66,26.76,5.76
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,1B_Local_Uncensored,NumPy OLS,8,0.0002,17.15,20.55,11.53
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,34.68,34.43,4.53
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,8.72,12.3,5.31
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,10.13,35.66,5.39
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,10.21,12.5,1.49
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,8.74,15.39,-0.39
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,29.53,14.55,-19.74
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,33.69,23.12,-12.58
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,19.05,24.39,6.13
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,15.66,26.76,-2.92
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0001,13.74,16.47,6.73
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,18.49,18.35,9.8
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,9.8,13.82,-0.68
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,8.32,29.29,1.86
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,14.58,17.84,-7.03
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,13.73,24.18,-12.41
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,17.6,8.67,-0.39
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,23.11,15.86,-16.14
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,20.66,26.44,18.35
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,15.62,26.69,8.25
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0002,15.83,18.97,10.13
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,18.65,18.51,8.25
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,8.8,12.4,2.14
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,8.81,31.01,4.24
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,13.45,16.46,4.64
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,10.17,17.92,-4.95
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,32.45,15.99,26.85
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,24.16,16.58,-1.97
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,14.83,18.98,2.86
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,14.27,24.39,-7.04
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0111,13.39,16.05,5.77
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,16.56,16.44,9.18
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,9.12,12.86,-3.09
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,7.16,25.19,2.36
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,12.8,15.67,0.25
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,8.81,15.52,-6.52
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,28.07,13.83,19.27
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,24.31,16.68,1.61
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,13.87,17.75,5.78
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,13.51,23.09,-7.24
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.022,13.14,15.74,8.04
+Kaggle_Favorita,FAV_S01_Quito,Cluster_14_Quito,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,15.51,15.39,3.44
+Kaggle_Favorita,FAV_S02_Quito,Cluster_14_Quito,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,9.77,13.78,-0.23
+Kaggle_Favorita,FAV_S03_Quito,Cluster_14_Quito,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,9.04,31.83,-1.87
+Kaggle_Favorita,FAV_S04_Quito_Hub,Cluster_14_Quito,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,12.21,14.94,-1.48
+Kaggle_Favorita,FAV_S05_Guayaquil,Cluster_06_Guayas,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,9.51,16.75,-6.94
+Kaggle_Favorita,FAV_S06_Guayaquil_Hub,Cluster_06_Guayas,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,20.31,10.01,6.73
+Kaggle_Favorita,FAV_S07_Guayaquil,Cluster_06_Guayas,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,21.77,14.94,-15.19
+Kaggle_Favorita,FAV_S08_Cuenca,Cluster_13_Austro,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,16.8,21.49,14.75
+Kaggle_Favorita,FAV_S09_Cuenca,Cluster_13_Austro,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,15.25,26.06,4.98
+Kaggle_Favorita,FAV_S10_Cuenca,Cluster_13_Austro,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0001,16.91,20.27,11.44
+Walmart_M5,CA_1,State_CA,1A_Local_Naive,NumPy OLS,8,0.0005,11.07,15.52,-1.25
+Walmart_M5,CA_2,State_CA,1A_Local_Naive,NumPy OLS,8,0.0005,13.98,30.51,8.23
+Walmart_M5,CA_3,State_CA,1A_Local_Naive,NumPy OLS,8,0.0005,22.3,40.29,21.7
+Walmart_M5,CA_4,State_CA,1A_Local_Naive,NumPy OLS,8,0.0005,12.85,13.09,10.01
+Walmart_M5,TX_1,State_TX,1A_Local_Naive,NumPy OLS,8,0.0005,11.62,11.32,5.89
+Walmart_M5,TX_2,State_TX,1A_Local_Naive,NumPy OLS,8,0.0005,10.28,11.54,8.2
+Walmart_M5,TX_3,State_TX,1A_Local_Naive,NumPy OLS,8,0.0005,16.56,21.67,13.6
+Walmart_M5,WI_1,State_WI,1A_Local_Naive,NumPy OLS,8,0.0005,12.49,18.34,0.73
+Walmart_M5,WI_2,State_WI,1A_Local_Naive,NumPy OLS,8,0.0005,17.12,31.61,-11.06
+Walmart_M5,WI_3,State_WI,1A_Local_Naive,NumPy OLS,8,0.0005,24.12,27.95,21.35
+Walmart_M5,CA_1,State_CA,1B_Local_Uncensored,NumPy OLS,8,0.0005,11.07,15.52,-1.25
+Walmart_M5,CA_2,State_CA,1B_Local_Uncensored,NumPy OLS,8,0.0005,13.98,30.51,8.23
+Walmart_M5,CA_3,State_CA,1B_Local_Uncensored,NumPy OLS,8,0.0005,22.3,40.29,21.7
+Walmart_M5,CA_4,State_CA,1B_Local_Uncensored,NumPy OLS,8,0.0005,12.85,13.09,10.01
+Walmart_M5,TX_1,State_TX,1B_Local_Uncensored,NumPy OLS,8,0.0005,11.62,11.32,5.89
+Walmart_M5,TX_2,State_TX,1B_Local_Uncensored,NumPy OLS,8,0.0005,10.28,11.54,8.2
+Walmart_M5,TX_3,State_TX,1B_Local_Uncensored,NumPy OLS,8,0.0005,16.56,21.67,13.6
+Walmart_M5,WI_1,State_WI,1B_Local_Uncensored,NumPy OLS,8,0.0005,12.49,18.34,0.73
+Walmart_M5,WI_2,State_WI,1B_Local_Uncensored,NumPy OLS,8,0.0005,17.12,31.61,-11.06
+Walmart_M5,WI_3,State_WI,1B_Local_Uncensored,NumPy OLS,8,0.0005,24.12,27.95,21.35
+Walmart_M5,CA_1,State_CA,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,19.29,27.06,17.61
+Walmart_M5,CA_2,State_CA,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,15.04,32.83,-5.97
+Walmart_M5,CA_3,State_CA,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,20.9,37.75,19.78
+Walmart_M5,CA_4,State_CA,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,14.18,14.45,10.9
+Walmart_M5,TX_1,State_TX,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,19.64,19.13,19.3
+Walmart_M5,TX_2,State_TX,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,14.69,16.48,13.73
+Walmart_M5,TX_3,State_TX,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,15.65,20.48,6.03
+Walmart_M5,WI_1,State_WI,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,13.67,20.08,6.9
+Walmart_M5,WI_2,State_WI,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,16.09,29.71,-10.09
+Walmart_M5,WI_3,State_WI,1Bp_Pooled_Shared,NumPy Pooled OLS,8,0.0004,17.99,20.85,11.18
+Walmart_M5,CA_1,State_CA,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,11.68,16.38,-0.32
+Walmart_M5,CA_2,State_CA,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,13.29,29.0,5.57
+Walmart_M5,CA_3,State_CA,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,17.3,31.24,15.66
+Walmart_M5,CA_4,State_CA,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,11.17,11.38,6.84
+Walmart_M5,TX_1,State_TX,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,12.56,12.24,4.69
+Walmart_M5,TX_2,State_TX,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,9.74,10.93,5.62
+Walmart_M5,TX_3,State_TX,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,14.32,18.73,11.06
+Walmart_M5,WI_1,State_WI,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,11.75,17.25,0.9
+Walmart_M5,WI_2,State_WI,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,14.61,26.98,-4.99
+Walmart_M5,WI_3,State_WI,2_Linear_1Hop,NumPy 1-Hop OLS,12,0.0006,21.78,25.24,16.27
+Walmart_M5,CA_1,State_CA,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,24.07,33.75,22.74
+Walmart_M5,CA_2,State_CA,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,13.72,29.95,7.65
+Walmart_M5,CA_3,State_CA,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,23.29,42.06,23.29
+Walmart_M5,CA_4,State_CA,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,35.72,36.38,35.72
+Walmart_M5,TX_1,State_TX,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,40.28,39.23,40.28
+Walmart_M5,TX_2,State_TX,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,34.0,38.14,34.0
+Walmart_M5,TX_3,State_TX,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,28.85,37.74,26.64
+Walmart_M5,WI_1,State_WI,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,23.88,35.07,21.92
+Walmart_M5,WI_2,State_WI,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,14.76,27.25,8.13
+Walmart_M5,WI_3,State_WI,GBDT_1Hop_16d,LightGBM (3 Seeds),16,0.0301,34.59,40.08,33.8
+Walmart_M5,CA_1,State_CA,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,23.55,33.03,20.37
+Walmart_M5,CA_2,State_CA,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,13.76,30.03,6.76
+Walmart_M5,CA_3,State_CA,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,22.09,39.9,21.66
+Walmart_M5,CA_4,State_CA,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,24.12,24.57,23.64
+Walmart_M5,TX_1,State_TX,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,34.41,33.51,34.41
+Walmart_M5,TX_2,State_TX,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,35.25,39.55,35.25
+Walmart_M5,TX_3,State_TX,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,33.83,44.26,32.83
+Walmart_M5,WI_1,State_WI,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,28.18,41.39,27.09
+Walmart_M5,WI_2,State_WI,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,13.65,25.2,9.19
+Walmart_M5,WI_3,State_WI,XGBoost_1Hop_16d,XGBoost (3 Seeds),16,0.0346,34.52,40.0,33.11
+Walmart_M5,CA_1,State_CA,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,11.67,16.36,-5.68
+Walmart_M5,CA_2,State_CA,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,13.17,28.74,6.32
+Walmart_M5,CA_3,State_CA,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,20.87,37.69,20.37
+Walmart_M5,CA_4,State_CA,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,10.58,10.77,5.09
+Walmart_M5,TX_1,State_TX,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,13.0,12.66,3.13
+Walmart_M5,TX_2,State_TX,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,10.83,12.15,6.32
+Walmart_M5,TX_3,State_TX,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,15.71,20.55,12.75
+Walmart_M5,WI_1,State_WI,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,12.06,17.7,0.42
+Walmart_M5,WI_2,State_WI,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,18.75,34.63,-12.79
+Walmart_M5,WI_3,State_WI,3_Hetero_Graph_2Hop,NumPy Ridge Graph,13,0.0003,26.74,30.99,23.9
