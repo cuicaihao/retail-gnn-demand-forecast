@@ -13,6 +13,7 @@ from src.feature_builders import build_all_feature_sets
 from src.models_linear import fit_predict_linear_spec, fit_predict_tobit_censored_mle
 from src.models_tree import fit_predict_gbdt_multi_seed
 from src.models_gnn import fit_predict_neural_gnn_multi_seed
+from src.models_prophet import fit_predict_prophet_spatial_ladder
 from src.evaluation import evaluate_model_macro_and_micro, get_test_regime_masks, compute_metrics
 
 
@@ -30,14 +31,21 @@ def run_exp2(repo_root: str) -> dict:
     p_l3, s_l3, rt_l3, _ = fit_predict_linear_spec("L3", feats["L3_2_Linear_1Hop_Local"], data)
     p_l4, s_l4, rt_l4, _ = fit_predict_linear_spec("L4", feats["L4_3_Analytical_2Hop_Graph"], data)
 
-    # 2. Fit Tree / GBDT Models (LightGBM & XGBoost across 5 seeds)
+    # 2. Fit Tree / GBDT Models (LightGBM & XGBoost across 5 seeds: Base, 1Hop, 2Hop)
     gbdt_11d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_Base_11d"], data, seeds=seeds, engine="lgbm")
+    xgb_11d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_Base_11d"], data, seeds=seeds, engine="xgboost")
     gbdt_18d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_1Hop_18d"], data, seeds=seeds, engine="lgbm")
     xgb_18d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_1Hop_18d"], data, seeds=seeds, engine="xgboost")
     gbdt_27d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_2Hop_27d"], data, seeds=seeds, engine="lgbm")
     xgb_27d = fit_predict_gbdt_multi_seed(feats["Tree_GBDT_2Hop_27d"], data, seeds=seeds, engine="xgboost")
 
-    # 3. Fit End-to-End Neural 2-Layer Hetero-GNN across 5 seeds
+    # 3. Fit Prophet Additive Time-Series Ladder (Base, 1Hop, 2Hop)
+    prophet_results = fit_predict_prophet_spatial_ladder(data)
+    prop_base = prophet_results["Prophet_Base"]
+    prop_1h = prophet_results["Prophet_1Hop"]
+    prop_2h = prophet_results["Prophet_2Hop"]
+
+    # 4. Fit End-to-End Neural 2-Layer Hetero-GNN across 5 seeds
     neural_gnn = fit_predict_neural_gnn_multi_seed(data, seeds=seeds, hidden_dim=16, epochs=350)
 
     # Save Feature Importances for Tree Models (18d and 27d)
@@ -65,20 +73,24 @@ def run_exp2(repo_root: str) -> dict:
     }).sort_values("importance_gain_share", ascending=False)
     df_imp_xgb_27.to_csv(os.path.join(repo_root, "results/metrics/exp2_xgboost_27d_feature_importance.csv"), index=False)
 
-    # Collect all models for unified macro & micro evaluation
+    # Collect all models for unified macro & micro evaluation using standardized [Model]-[Data/Tier] naming
     model_entries = [
-        ("M1A_OLS_Naive_7d", "Linear/Stat", "1A. 单店全量 OLS (7d)", p_1a, s_1a, None, 7, 7, 70, rt_1a),
-        ("M1B_OLS_Uncens_7d", "Linear/Stat", "1B. 单店去截断 OLS (7d)", p_1b, s_1b, None, 7, 7, 70, rt_1b),
-        ("M1B_Tobit_MLE_7d", "Linear/Stat", "1B-Tobit. 单店截断似然 MLE (7d)", p_tobit, s_tobit, None, 7, 7, 80, rt_tobit),
-        ("M1Bp_Pooled_NoGraph_16d", "Linear/Stat", "1B'-Pooled. 全网池化无图 OLS (16d)", p_l2a, s_l2a, None, 7, 16, 16, rt_l2a),
-        ("M2_OLS_1Hop_9d", "Linear/Stat", "2. 一阶邻域线性 OLS (9d)", p_l3, s_l3, None, 9, 9, 90, rt_l3),
-        ("M_GBDT_Base_11d", "Tree/LightGBM", "GBDT-Base. 树模型单店无图基线 (11d)", gbdt_11d["mean_pred_demand"], gbdt_11d["mean_pred_sales"], gbdt_11d["seed_preds"], 11, 11, 4960, gbdt_11d["mean_runtime_sec"]),
-        ("M_GBDT_1Hop_Raw_18d", "Tree/LightGBM", "GBDT-1Hop-Raw. 树模型一阶邻域宽表 (18d, 自动分裂交互)", gbdt_18d["mean_pred_demand"], gbdt_18d["mean_pred_sales"], gbdt_18d["seed_preds"], 18, 18, 4960, gbdt_18d["mean_runtime_sec"]),
-        ("M_XGBoost_1Hop_Raw_18d", "Tree/XGBoost", "XGBoost-1Hop. 经典 XGBoost 直方图宽表 (18d, 5 Seeds)", xgb_18d["mean_pred_demand"], xgb_18d["mean_pred_sales"], xgb_18d["seed_preds"], 18, 18, 4960, xgb_18d["mean_runtime_sec"]),
-        ("M_GBDT_2Hop_Graph_27d", "Tree/LightGBM", "GBDT-2Hop. 树模型显式二阶图特征 (27d)", gbdt_27d["mean_pred_demand"], gbdt_27d["mean_pred_sales"], gbdt_27d["seed_preds"], 27, 27, 4960, gbdt_27d["mean_runtime_sec"]),
-        ("M_XGBoost_2Hop_Graph_27d", "Tree/XGBoost", "XGBoost-2Hop. 经典 XGBoost 显式二阶图特征 (27d, 5 Seeds)", xgb_27d["mean_pred_demand"], xgb_27d["mean_pred_sales"], xgb_27d["seed_preds"], 27, 27, 4960, xgb_27d["mean_runtime_sec"]),
-        ("M3_Neural_HeteroGNN_2Layer", "Neural GNN", "3-Neural. 端到端训练两层异构 GNN (PyG/Adam, 5 Seeds)", neural_gnn["mean_pred_demand"], neural_gnn["mean_pred_sales"], neural_gnn["seed_preds"], 10, 24, neural_gnn["total_params"], neural_gnn["mean_runtime_sec"]),
-        ("M3_Analytical_2Hop_79d", "Analytical Graph", "3-Analytical. 两层解析图模型 (79d, 理论参照上限)", p_l4, s_l4, None, 16, 79, 79, rt_l4),
+        ("M1A_OLS_Naive_7d", "Linear/Stat", "OLS-Naive (7d 全量含缺货)", p_1a, s_1a, None, 7, 7, 70, rt_1a),
+        ("M1B_OLS_Uncens_7d", "Linear/Stat", "OLS-Base (7d 单店去截断)", p_1b, s_1b, None, 7, 7, 70, rt_1b),
+        ("M1B_Tobit_MLE_7d", "Linear/Stat", "Tobit-MLE (7d 截断似然)", p_tobit, s_tobit, None, 7, 7, 80, rt_tobit),
+        ("M1Bp_Pooled_NoGraph_16d", "Linear/Stat", "OLS-Pooled (16d 全网池化无图)", p_l2a, s_l2a, None, 7, 16, 16, rt_l2a),
+        ("M2_OLS_1Hop_9d", "Linear/Stat", "OLS-1Hop (9d 一阶邻域线性)", p_l3, s_l3, None, 9, 9, 90, rt_l3),
+        ("M_Prophet_Base", "GAM/Prophet", "Prophet-Base (2d 外生 + 原生周/年傅里叶)", prop_base["pred_demand"], prop_base["pred_sales"], None, 2, 2, prop_base["total_params"], prop_base["runtime_sec"]),
+        ("M_Prophet_1Hop", "GAM/Prophet", "Prophet-1Hop (5d 外生宽表 + 原生周/年傅里叶)", prop_1h["pred_demand"], prop_1h["pred_sales"], None, 5, 5, prop_1h["total_params"], prop_1h["runtime_sec"]),
+        ("M_Prophet_2Hop", "GAM/Prophet", "Prophet-2Hop (7d 二阶拓扑外生 + 原生傅里叶)", prop_2h["pred_demand"], prop_2h["pred_sales"], None, 7, 7, prop_2h["total_params"], prop_2h["runtime_sec"]),
+        ("M_GBDT_Base_11d", "Tree/LightGBM", "LightGBM-Base (11d 单店无图基线)", gbdt_11d["mean_pred_demand"], gbdt_11d["mean_pred_sales"], gbdt_11d["seed_preds"], 11, 11, 4960, gbdt_11d["mean_runtime_sec"]),
+        ("M_GBDT_1Hop_Raw_18d", "Tree/LightGBM", "LightGBM-1Hop (18d 一阶邻域宽表)", gbdt_18d["mean_pred_demand"], gbdt_18d["mean_pred_sales"], gbdt_18d["seed_preds"], 18, 18, 4960, gbdt_18d["mean_runtime_sec"]),
+        ("M_GBDT_2Hop_Graph_27d", "Tree/LightGBM", "LightGBM-2Hop (27d 显式二阶图特征)", gbdt_27d["mean_pred_demand"], gbdt_27d["mean_pred_sales"], gbdt_27d["seed_preds"], 27, 27, 4960, gbdt_27d["mean_runtime_sec"]),
+        ("M_XGBoost_Base_11d", "Tree/XGBoost", "XGBoost-Base (11d 经典单店基线)", xgb_11d["mean_pred_demand"], xgb_11d["mean_pred_sales"], xgb_11d["seed_preds"], 11, 11, 4960, xgb_11d["mean_runtime_sec"]),
+        ("M_XGBoost_1Hop_Raw_18d", "Tree/XGBoost", "XGBoost-1Hop (18d 经典一阶宽表)", xgb_18d["mean_pred_demand"], xgb_18d["mean_pred_sales"], xgb_18d["seed_preds"], 18, 18, 4960, xgb_18d["mean_runtime_sec"]),
+        ("M_XGBoost_2Hop_Graph_27d", "Tree/XGBoost", "XGBoost-2Hop (27d 经典显式二阶图)", xgb_27d["mean_pred_demand"], xgb_27d["mean_pred_sales"], xgb_27d["seed_preds"], 27, 27, 4960, xgb_27d["mean_runtime_sec"]),
+        ("M3_Neural_HeteroGNN_2Layer", "Neural GNN", "NeuralGNN-2Hop (两层异构神经图网络)", neural_gnn["mean_pred_demand"], neural_gnn["mean_pred_sales"], neural_gnn["seed_preds"], 10, 24, neural_gnn["total_params"], neural_gnn["mean_runtime_sec"]),
+        ("M3_Analytical_2Hop_79d", "Analytical Graph", "Analytical-2Hop (79d 两层解析图模型 · 理论参照上限)", p_l4, s_l4, None, 16, 79, 79, rt_l4),
     ]
 
     macro_rows = []
@@ -158,11 +170,12 @@ def run_exp2(repo_root: str) -> dict:
     df_preds = pd.DataFrame(pred_records)
     df_preds.to_csv(os.path.join(repo_root, "results/predictions/synth_test_predictions_all_models.csv"), index=False)
 
-    # Save plot-ready CSVs for Fig 4 (S5 & S6 time series) and Fig 5 (Regime Ablation)
+    # Save plot-ready CSVs for Fig 4 (S5 & S6 time series), Fig 5 (Regime Ablation), and Fig 6 (Toolkit Tradeoff)
     df_preds[df_preds["store_id"].isin(["S5", "S6"])].to_csv(
         os.path.join(repo_root, "results/plot_data/plot_fig4_test_28d_s5_s6.csv"), index=False
     )
     df_macro.to_csv(os.path.join(repo_root, "results/plot_data/plot_fig5_ablation_regimes.csv"), index=False)
+    df_macro.to_csv(os.path.join(repo_root, "results/plot_data/plot_fig6_toolkit_tradeoff.csv"), index=False)
 
     # ==========================================================================
     # 4. Experiment E5: Negative Control (Zero Coupling: cannib_beta=0, spillover_eta=0)

@@ -16,6 +16,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.models_tree import NumPyHistGBDTRegressor, HAS_LGBM, HAS_XGB
+from src.models_prophet import fit_predict_prophet_public_dataset
 from src.evaluation import compute_metrics
 from src.real_data_loader import (
     load_real_freshretailnet_10stores,
@@ -233,12 +234,23 @@ def _evaluate_public_dataset(ds_dict: dict, repo_root: str) -> tuple:
     p_graph = np.maximum(0.0, np.einsum("tnd,d->tn", X_graph, b_graph))
     t_graph = time.perf_counter() - t0_graph
 
+    # 8. Prophet Models (Prophet-Base and Prophet-1Hop)
+    p_prop_te, t_prop_base = fit_predict_prophet_public_dataset(ds_dict, spatial_level="base")
+    p_prop_base = np.zeros((T, N))
+    p_prop_base[train_end:, :] = p_prop_te
+
+    p_prop_1h_te, t_prop_1h = fit_predict_prophet_public_dataset(ds_dict, spatial_level="1hop")
+    p_prop_1h = np.zeros((T, N))
+    p_prop_1h[train_end:, :] = p_prop_1h_te
+
     test_mask = np.arange(T)[:, None] >= train_end
     test_mask = np.broadcast_to(test_mask, (T, N))
 
     models_eval = [
         ("1A_Local_Naive", "NumPy OLS", 8, 8, t_1a, p_1a),
         ("1B_Local_Uncensored", "NumPy OLS", 8, 8, t_1b, p_1b),
+        ("Prophet_Base", "Prophet (0-Hop)", 4, 4, t_prop_base, p_prop_base),
+        ("Prophet_1Hop", "Prophet (1-Hop)", 7, 7, t_prop_1h, p_prop_1h),
         ("1Bp_Pooled_Shared", "NumPy Pooled OLS", 8, 17, t_pool, p_pool),
         ("2_Linear_1Hop", "NumPy 1-Hop OLS", 12, 12, t_l3, p_l3),
         ("GBDT_1Hop_16d", "LightGBM (3 Seeds)", 16, 16, t_gbdt, p_gbdt),

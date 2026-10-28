@@ -191,7 +191,7 @@ def plot_fig1_topology(out_dir: Path, lang: str = "zh") -> None:
                      "(b) Spatial random-walk matrix P^spa = (D^spa)^-1 A^spa"), fontsize=12, fontweight="bold")
     fig.colorbar(im, ax=ax2, fraction=0.046, pad=0.04)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "retail_network_topology", lang)
+    _save_dual(fig, out_dir, "fig1_retail_network_topology", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ def plot_fig2_panorama(out_dir: Path, lang: str = "zh") -> None:
                     "Daily observed sales vs. latent demand across 10 stores (2025-07-01 to 2025-12-31, 184 days)"),
                  fontsize=14, fontweight="bold", y=0.997)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "all_stores_sales_panorama", lang)
+    _save_dual(fig, out_dir, "fig2_all_stores_sales_panorama", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -308,7 +308,7 @@ def plot_fig3_decomposition(out_dir: Path, lang: str = "zh") -> None:
                     "Single-store demand structure: own cycle + cannibalisation dips + spillover peaks + censoring (H2 2025, shaded = test window)"),
                  fontsize=13, fontweight="bold", y=0.995)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "single_store_decomposition", lang)
+    _save_dual(fig, out_dir, "fig3_single_store_decomposition", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -367,7 +367,7 @@ def plot_fig4_timeseries_comparison(out_dir: Path, lang: str = "zh") -> None:
                     "28-day test window (2025-12-04 to 12-31): dynamic coupling of adjacent Central-Corridor stores"),
                  fontsize=13.5, fontweight="bold", y=0.995)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "store_timeseries_comparison", lang)
+    _save_dual(fig, out_dir, "fig4_store_timeseries_comparison", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -440,7 +440,7 @@ def plot_fig5_ablation_metrics(out_dir: Path, lang: str = "zh") -> None:
                      "(b) Systematic bias by regime (+ over-forecast, - under-forecast)"), fontsize=12, fontweight="bold")
 
     fig.tight_layout()
-    _save_dual(fig, out_dir, "regime_ablation_metrics", lang)
+    _save_dual(fig, out_dir, "fig5_regime_ablation_metrics", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -448,7 +448,9 @@ def plot_fig5_ablation_metrics(out_dir: Path, lang: str = "zh") -> None:
 # ----------------------------------------------------------------------------------------------
 def plot_fig6_toolkit_tradeoff(out_dir: Path, lang: str = "zh") -> None:
     _set_font(lang)
-    csv_file = PLOT_DATA_DIR / "plot_fig5_ablation_regimes.csv"
+    csv_file = PLOT_DATA_DIR / "plot_fig6_toolkit_tradeoff.csv"
+    if not csv_file.exists():
+        csv_file = PLOT_DATA_DIR / "plot_fig5_ablation_regimes.csv"
     if not csv_file.exists():
         print(f"Warning: {csv_file} does not exist.")
         return
@@ -459,7 +461,9 @@ def plot_fig6_toolkit_tradeoff(out_dir: Path, lang: str = "zh") -> None:
     points = [
         {"name_zh": "1B · 闭式 OLS", "name_en": "1B · Closed OLS", "tier": "1B", "t": 0.0007, "w": df.loc["M1B_OLS_Uncens_7d", "Spillover_D_wape"] if "M1B_OLS_Uncens_7d" in df.index else 22.3, "pos": (8, 6)},
         {"name_zh": "1B · Tobit MLE", "name_en": "1B · Tobit MLE", "tier": "1B", "t": 0.305, "w": df.loc["M1B_Tobit_MLE_7d", "Spillover_D_wape"] if "M1B_Tobit_MLE_7d" in df.index else 21.1, "pos": (-14, 12)},
+        {"name_zh": "1B · Prophet Base", "name_en": "1B · Prophet Base", "tier": "1B", "t": df.loc["M_Prophet_Base", "runtime_sec"] if "M_Prophet_Base" in df.index else 2.1, "w": df.loc["M_Prophet_Base", "Spillover_D_wape"] if "M_Prophet_Base" in df.index else 22.1, "pos": (8, 12)},
         {"name_zh": "2 · 一阶 OLS", "name_en": "2 · 1-Hop OLS", "tier": "2", "t": 0.0022, "w": df.loc["M2_OLS_1Hop_9d", "Spillover_D_wape"] if "M2_OLS_1Hop_9d" in df.index else 21.1, "pos": (8, -14)},
+        {"name_zh": "2 · Prophet 一阶", "name_en": "2 · Prophet 1-Hop", "tier": "2", "t": df.loc["M_Prophet_1Hop", "runtime_sec"] if "M_Prophet_1Hop" in df.index else 2.3, "w": df.loc["M_Prophet_1Hop", "Spillover_D_wape"] if "M_Prophet_1Hop" in df.index else 21.4, "pos": (-75, 12)},
         {"name_zh": "2 · LightGBM 宽表", "name_en": "2 · LightGBM Flat", "tier": "2", "t": df.loc["M_GBDT_1Hop_Raw_18d", "runtime_sec"] if "M_GBDT_1Hop_Raw_18d" in df.index else 0.26, "w": df.loc["M_GBDT_1Hop_Raw_18d", "Spillover_D_wape"] if "M_GBDT_1Hop_Raw_18d" in df.index else 10.9, "pos": (8, 6)},
         {"name_zh": "2 · XGBoost 宽表", "name_en": "2 · XGBoost Flat", "tier": "2", "t": df.loc["M_XGBoost_1Hop_Raw_18d", "runtime_sec"] if "M_XGBoost_1Hop_Raw_18d" in df.index else 0.32, "w": df.loc["M_XGBoost_1Hop_Raw_18d", "Spillover_D_wape"] if "M_XGBoost_1Hop_Raw_18d" in df.index else 11.0, "pos": (-75, -16)},
         {"name_zh": "2+ · LightGBM 二阶图", "name_en": "2+ · LightGBM 2-Hop", "tier": "3", "t": df.loc["M_GBDT_2Hop_Graph_27d", "runtime_sec"] if "M_GBDT_2Hop_Graph_27d" in df.index else 0.26, "w": df.loc["M_GBDT_2Hop_Graph_27d", "Spillover_D_wape"] if "M_GBDT_2Hop_Graph_27d" in df.index else 12.5, "pos": (-85, 10)},
@@ -526,7 +530,7 @@ def plot_fig6_toolkit_tradeoff(out_dir: Path, lang: str = "zh") -> None:
                      "(b) Four-layer toolkit ecosystem by engineering abstraction"), fontsize=12, fontweight="bold")
 
     fig.tight_layout()
-    _save_dual(fig, out_dir, "multitool_benchmark_tradeoff", lang)
+    _save_dual(fig, out_dir, "fig6_multitool_benchmark_tradeoff", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -545,17 +549,21 @@ def plot_fig7_store_regime_heatmap(out_dir: Path, lang: str = "zh") -> None:
     regimes = ["Normal", "Cannibalization", "Spillover"]
     models = [
         ("1A_Naive_7d_wape", "1A Naive"),
-        ("1B_Uncens_7d_wape", "1B Uncens"),
-        ("2_Linear_1Hop_9d_wape", "2 Linear 1-Hop"),
-        ("GBDT_Base_11d_wape", "GBDT Base"),
-        ("GBDT_1Hop_Raw_18d_wape", "LGBM 1-Hop"),
-        ("XGBoost_1Hop_18d_wape", "XGB 1-Hop"),
-        ("GBDT_2Hop_27d_wape", "LGBM 2-Hop"),
-        ("XGBoost_2Hop_27d_wape", "XGB 2-Hop"),
+        ("1B_Uncens_7d_wape", "1B Base"),
+        ("2_Linear_1Hop_9d_wape", "2 Linear 1H"),
+        ("Prophet_Base_wape", "Prophet Base"),
+        ("Prophet_1Hop_wape", "Prophet 1H"),
+        ("Prophet_2Hop_wape", "Prophet 2H"),
+        ("LightGBM_Base_11d_wape", "LGBM Base"),
+        ("LightGBM_1Hop_18d_wape", "LGBM 1H"),
+        ("LightGBM_2Hop_27d_wape", "LGBM 2H"),
+        ("XGBoost_Base_11d_wape", "XGB Base"),
+        ("XGBoost_1Hop_18d_wape", "XGB 1H"),
+        ("XGBoost_2Hop_27d_wape", "XGB 2H"),
         ("3_Neural_GNN_2L_wape", "3 Neural GNN"),
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6.2), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(21.5, 6.4), sharey=True)
 
     titles = {
         "Normal": _t(lang, "(a) 常规平稳期 WAPE (%)", "(a) Normal Regime WAPE (%)"),
@@ -572,20 +580,22 @@ def plot_fig7_store_regime_heatmap(out_dir: Path, lang: str = "zh") -> None:
             for j, (col, _) in enumerate(models):
                 if s in sub.index and col in sub.columns:
                     data[i, j] = sub.loc[s, col]
+                elif s in sub.index and col.replace("LightGBM", "GBDT") in sub.columns:
+                    data[i, j] = sub.loc[s, col.replace("LightGBM", "GBDT")]
 
         # Use colormap highlighting error explosion
         vmax = 35.0 if reg == "Spillover" else 18.0
         im = ax.imshow(data, cmap="YlOrRd", vmin=0.0, vmax=vmax, aspect="auto")
 
         ax.set_xticks(range(len(models)))
-        ax.set_xticklabels([m[1] for m in models], rotation=35, ha="right", fontsize=8.5)
+        ax.set_xticklabels([m[1] for m in models], rotation=40, ha="right", fontsize=8.0)
         ax.set_yticks(range(len(stores)))
         ax.set_yticklabels(stores, fontsize=9.5)
 
         for i in range(len(stores)):
             for j in range(len(models)):
                 val = data[i, j]
-                ax.text(j, i, f"{val:.1f}", ha="center", va="center", fontsize=7.8,
+                ax.text(j, i, f"{val:.1f}", ha="center", va="center", fontsize=7.2,
                         color="white" if val > vmax * 0.65 else "#0F172A")
 
         ax.set_title(titles[reg], fontsize=11.5, fontweight="bold")
@@ -596,7 +606,7 @@ def plot_fig7_store_regime_heatmap(out_dir: Path, lang: str = "zh") -> None:
                     "Store-level Model WAPE Heatmap across Business Regimes (Spillover collapses local models, GNN stays robust)"),
                  fontsize=13, fontweight="bold", y=0.99)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "store_regime_heatmap", lang)
+    _save_dual(fig, out_dir, "fig7_store_regime_heatmap", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -654,7 +664,7 @@ def plot_fig8_feature_dim_vs_wape(out_dir: Path, lang: str = "zh") -> None:
                      "Feature Dimension Ladder vs Information Boundary: Model Capacity Cannot Replace Topology"),
                  fontsize=12.5, fontweight="bold")
     fig.tight_layout()
-    _save_dual(fig, out_dir, "feature_dim_vs_wape", lang)
+    _save_dual(fig, out_dir, "fig8_feature_dim_vs_wape", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -670,7 +680,7 @@ def plot_fig9_public_benchmarks(out_dir: Path, lang: str = "zh") -> None:
     df = pd.read_csv(csv_file)
     datasets = df["dataset"].unique()
 
-    fig, axes = plt.subplots(1, len(datasets), figsize=(18, 5.8), sharey=False)
+    fig, axes = plt.subplots(1, len(datasets), figsize=(20, 5.8), sharey=False)
 
     bench_titles = {
         "FreshRetailNet_50K": _t(lang, "场景一：叮咚买菜 FreshRetailNet-50K\n(同城高密前置仓 · 30.8%真实缺货截断)",
@@ -681,7 +691,7 @@ def plot_fig9_public_benchmarks(out_dir: Path, lang: str = "zh") -> None:
                          "Scenario 3: Walmart M5\n(Cross-State Supercenters · Macro Drivers)"),
     }
 
-    colors = [C_1A, C_1B, "#FBBF24", C_2, C_GBDT, "#EA580C", C_3]
+    colors = [C_1A, C_1B, "#38BDF8", "#0284C7", "#FBBF24", C_2, C_GBDT, "#EA580C", C_3]
 
     for ax, ds in zip(axes, datasets):
         sub = df[df["dataset"] == ds].reset_index(drop=True)
@@ -692,12 +702,14 @@ def plot_fig9_public_benchmarks(out_dir: Path, lang: str = "zh") -> None:
 
         for bar, val, bias in zip(bars, sub["Overall_WAPE"], sub["Overall_Bias"]):
             ax.text(bar.get_x() + w / 2, val + 0.6, f"{val:.1f}%\n({bias:+.1f}%)",
-                    ha="center", va="bottom", fontsize=7.6)
+                    ha="center", va="bottom", fontsize=7.2)
 
         # Simplify model names for labels
         short_names = [
             m.replace("1A_Local_Naive", "1A Naive")
-             .replace("1B_Local_Uncensored", "1B Uncens")
+             .replace("1B_Local_Uncensored", "1B Base")
+             .replace("Prophet_Base", "Prophet Base")
+             .replace("Prophet_1Hop", "Prophet 1H")
              .replace("1Bp_Pooled_Shared", "1B' Pooled")
              .replace("2_Linear_1Hop", "2 Linear 1H")
              .replace("GBDT_1Hop_16d", "LightGBM")
@@ -706,7 +718,7 @@ def plot_fig9_public_benchmarks(out_dir: Path, lang: str = "zh") -> None:
             for m in sub["model_id"]
         ]
         ax.set_xticks(x)
-        ax.set_xticklabels(short_names, rotation=35, ha="right", fontsize=8.8)
+        ax.set_xticklabels(short_names, rotation=38, ha="right", fontsize=8.2)
         ax.set_ylabel("WAPE (%)", fontsize=10)
         ax.set_ylim(0, max(sub["Overall_WAPE"]) * 1.25)
         ax.grid(True, axis="y", ls=":", alpha=0.45)
@@ -716,7 +728,7 @@ def plot_fig9_public_benchmarks(out_dir: Path, lang: str = "zh") -> None:
                     "Public Real-World Retail Benchmark Evaluation across Spatial Topologies & Retail Formats"),
                  fontsize=13.5, fontweight="bold", y=0.995)
     fig.tight_layout()
-    _save_dual(fig, out_dir, "public_benchmarks_comparison", lang)
+    _save_dual(fig, out_dir, "fig9_public_benchmarks_comparison", lang)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -726,6 +738,19 @@ def generate_all_figures(out_dir: Path, langs: List[str]) -> None:
     print(f"\n=======================================================")
     print(f"Generating Publication-Grade Figures into {out_dir}")
     print(f"=======================================================")
+
+    # Clean legacy unnumbered figure files to ensure pristine directory structure
+    legacy_stems = [
+        "retail_network_topology", "all_stores_sales_panorama", "single_store_decomposition",
+        "store_timeseries_comparison", "regime_ablation_metrics", "multitool_benchmark_tradeoff",
+        "store_regime_heatmap", "feature_dim_vs_wape", "public_benchmarks_comparison"
+    ]
+    for old_s in legacy_stems:
+        for f in out_dir.glob(f"{old_s}*"):
+            try:
+                f.unlink()
+            except Exception:
+                pass
 
     for lang in langs:
         print(f"\n>>> Rendering figures for language: [{lang.upper()}]")

@@ -32,17 +32,17 @@
 
 ## 一、核心结论速览 (Executive Summary)
 
-![零售网络异构图与空间转移矩阵](figures/retail_network_topology.png)
+![零售网络异构图与空间转移矩阵](figures/fig1_retail_network_topology.png)
 
 1. **信息边界决定精度上限，盲目调包无法突破物理盲区**：
    在单店信息孤岛下，不论使用毫秒级闭式 OLS、还是花费数十秒拟合的 Meta Prophet 或 Darts，常规平稳期虽可达 3.7% WAPE，但在跨店断货溢出期均发生 **-22% 的严重低估漏报**。只有打通“仓库 $\to$ 邻店 $\to$ 本店”的两跳异构拓扑，溢出期误差才能骤降至 **3.26%–3.95%**。
 
-![各业务子场景 WAPE 与系统性偏差 Bias 对比](figures/regime_ablation_metrics.png)
+![各业务子场景 WAPE 与系统性偏差 Bias 对比](figures/fig5_regime_ablation_metrics.png)
 
 1. **树模型双雄是工业级强基线，能自主吃透大部分非线性组合**：
    当把“本店信息 + 邻居大促 + 邻居上游仓断货比例”并排铺平为 18 维宽表交给 GBDT（LightGBM 与 XGBoost）时，决策树无需人工显式相乘，仅凭分支判断即可将溢出期误差从 21.11% 压缩到 **10.38%（XGBoost）与 10.91%（LightGBM）**，自主追回近六成差距。两款引擎学出的前列特征高度自洽。
 
-![三大真实公开基准评测对比](figures/public_benchmarks_comparison.png)
+![三大真实公开基准评测对比](figures/fig9_public_benchmarks_comparison.png)
 
 1. **真实世界的“三阶梯落地定律”与工具包选型**：
    - **高密生鲜网格（FreshRetailNet-50K）**：真实营业期缺货达 30.8%，去截断模型与全网池化（27.02%）表现最稳，树模型中 XGBoost（32.17%）优于 LightGBM（36.20%），交界仓上图网络保持领先；
@@ -65,6 +65,7 @@ retail-gnn-demand-forecast/
 │   ├── data_generator.py                      # 4 层耦合零售网络沙盒（FSM / 马尔可夫双仓 / 空间转移）
 │   ├── feature_builders.py                    # 统一特征构造器（L0..L4、GBDT 11d/18d/27d、GNN 张量）
 │   ├── models_linear.py                       # 线性正规方程求解器与 Right-Censored Tobit MLE
+│   ├── models_prophet.py                      # Prophet 时间序列加性模型（0-Hop / 1-Hop / 2-Hop 空间阶梯）
 │   ├── models_tree.py                         # 树模型引擎（支持原生 LightGBM、XGBoost 与纯 NumPy 降级）
 │   ├── models_gnn.py                          # 端到端两层异构图神经网络（纯 NumPy Adam 优化，5 随机种子）
 │   ├── real_data_loader.py                    # 三大真实公开数据集提取与 10 门店网络抽取流水线

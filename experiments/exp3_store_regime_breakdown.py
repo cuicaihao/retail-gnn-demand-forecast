@@ -36,10 +36,14 @@ def run_exp3(repo_root: str) -> dict:
         arr[tr_end:, :] = piv
         return arr
     gbdt_11 = _load_p("pred_M_GBDT_Base_11d")
+    xgb_11 = _load_p("pred_M_XGBoost_Base_11d")
     gbdt_18 = _load_p("pred_M_GBDT_1Hop_Raw_18d")
     xgb_18 = _load_p("pred_M_XGBoost_1Hop_Raw_18d")
     gbdt_27 = _load_p("pred_M_GBDT_2Hop_Graph_27d")
     xgb_27 = _load_p("pred_M_XGBoost_2Hop_Graph_27d")
+    prop_base = _load_p("pred_M_Prophet_Base")
+    prop_1h = _load_p("pred_M_Prophet_1Hop")
+    prop_2h = _load_p("pred_M_Prophet_2Hop")
     gnn_neu = _load_p("pred_M3_Neural_HeteroGNN_2Layer")
 
     models_map = [
@@ -47,10 +51,14 @@ def run_exp3(repo_root: str) -> dict:
         ("1B_Uncens_7d", p_1b),
         ("1Bp_Pooled_16d", p_l2a),
         ("2_Linear_1Hop_9d", p_l3),
-        ("GBDT_Base_11d", gbdt_11),
-        ("GBDT_1Hop_Raw_18d", gbdt_18),
+        ("Prophet_Base", prop_base),
+        ("Prophet_1Hop", prop_1h),
+        ("Prophet_2Hop", prop_2h),
+        ("LightGBM_Base_11d", gbdt_11),
+        ("LightGBM_1Hop_18d", gbdt_18),
+        ("LightGBM_2Hop_27d", gbdt_27),
+        ("XGBoost_Base_11d", xgb_11),
         ("XGBoost_1Hop_18d", xgb_18),
-        ("GBDT_2Hop_27d", gbdt_27),
         ("XGBoost_2Hop_27d", xgb_27),
         ("3_Neural_GNN_2L", gnn_neu),
         ("3_Analytical_GNN_79d", p_l4),
