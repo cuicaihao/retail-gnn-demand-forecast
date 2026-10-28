@@ -5,7 +5,7 @@
 [![Blog Post](https://img.shields.io/badge/Blog-cuicaihao.github.io-brightgreen.svg)](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)
 [![Technical Report](https://img.shields.io/badge/Technical_Report-experimental--report.md-blue.svg)](experimental-report.md)
 
-本项目是技术深度长文**《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》**（[中文博文](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/) / [English Post](https://cuicaihao.github.io/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)）与姊妹篇《[用 Prophet 做零售需求预测](https://cuicaihao.github.io/zh/posts/2026-10-01-prophet-retail-demand-forecast/)》配套的开源科学实验工程套件。
+本项目是技术深度长文 **《用图神经网络做零售需求预测：数学原理、受控实验与生产落地边界》**（[中文博文](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/) / [English Post](https://cuicaihao.github.io/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/)）与姊妹篇《[用 Prophet 做零售需求预测](https://cuicaihao.github.io/zh/posts/2026-10-01-prophet-retail-demand-forecast/)》配套的开源科学实验工程套件。
 
 项目聚焦多仓多店零售网络中的核心冲突——**近邻促销负向虹吸**与**跨仓断货正向溢出**，构建了严格无信息泄漏的受控仿真沙盒与四大递进实验，并在三大真实公开工业级基准（**叮咚买菜 FreshRetailNet-50K**、**Kaggle Corporación Favorita**、**Walmart M5**）上进行了端到端实测验证。
 
@@ -13,18 +13,20 @@
 
 ## 目录
 
-- [一、核心结论速览 (Executive Summary)](#一核心结论速览-executive-summary)
-- [二、现代模块化仓库架构](#二现代模块化仓库架构)
-- [三、快速开始 (Quickstart)](#三快速开始-quickstart)
-  - [1. 环境安装](#1-环境安装)
-  - [2. 自动下载三大真实公开数据](#2-自动下载三大真实公开数据)
-  - [3. 一键运行全量实验套件](#3-一键运行全量实验套件)
-  - [4. 单独运行指定子实验](#4-单独运行指定子实验)
-  - [5. 启动交互式 Notebook](#5-启动交互式-notebook)
-- [四、详细技术实验报告与业务故事](#四详细技术实验报告与业务故事)
-- [五、数据产物持久化与绘图解耦设计](#五数据产物持久化与绘图解耦设计)
-- [六、历史版本归档说明 (Archive)](#六历史版本归档说明-archive)
-- [七、引用与关联阅读](#七引用与关联阅读)
+- [Retail Network Demand Forecasting: From Single-Store Baselines to Heterogeneous Spatio-Temporal GNNs](#retail-network-demand-forecasting-from-single-store-baselines-to-heterogeneous-spatio-temporal-gnns)
+  - [目录](#目录)
+  - [一、核心结论速览 (Executive Summary)](#一核心结论速览-executive-summary)
+  - [二、现代模块化仓库架构](#二现代模块化仓库架构)
+  - [三、快速开始 (Quickstart)](#三快速开始-quickstart)
+    - [1. 环境安装](#1-环境安装)
+    - [2. 自动下载三大真实公开数据](#2-自动下载三大真实公开数据)
+    - [3. 一键运行全量实验套件与图表生成](#3-一键运行全量实验套件与图表生成)
+    - [4. 单独运行指定子实验](#4-单独运行指定子实验)
+    - [5. 启动交互式 Notebook](#5-启动交互式-notebook)
+  - [四、详细技术实验报告与业务故事](#四详细技术实验报告与业务故事)
+  - [五、数据产物持久化与绘图解耦设计](#五数据产物持久化与绘图解耦设计)
+  - [六、历史版本归档说明 (Archive)](#六历史版本归档说明-archive)
+  - [七、引用与关联阅读](#七引用与关联阅读)
 
 ---
 
@@ -37,12 +39,12 @@
 
 ![各业务子场景 WAPE 与系统性偏差 Bias 对比](figures/regime_ablation_metrics.png)
 
-2. **树模型双雄是工业级强基线，能自主吃透大部分非线性组合**：
+1. **树模型双雄是工业级强基线，能自主吃透大部分非线性组合**：
    当把“本店信息 + 邻居大促 + 邻居上游仓断货比例”并排铺平为 18 维宽表交给 GBDT（LightGBM 与 XGBoost）时，决策树无需人工显式相乘，仅凭分支判断即可将溢出期误差从 21.11% 压缩到 **10.38%（XGBoost）与 10.91%（LightGBM）**，自主追回近六成差距。两款引擎学出的前列特征高度自洽。
 
 ![三大真实公开基准评测对比](figures/public_benchmarks_comparison.png)
 
-3. **真实世界的“三阶梯落地定律”与工具包选型**：
+1. **真实世界的“三阶梯落地定律”与工具包选型**：
    - **高密生鲜网格（FreshRetailNet-50K）**：真实营业期缺货达 30.8%，去截断模型与全网池化（27.02%）表现最稳，树模型中 XGBoost（32.17%）优于 LightGBM（36.20%），交界仓上图网络保持领先；
    - **连锁大型商超（Favorita）**：缺失显式缺货记录，核心驱动力转为发薪日大促脉冲，**XGBoost (12.11%) 斩获全场第一，与图模型 (12.99%) 和 LightGBM (13.19%) 并驾齐驱**；
    - **远距离跨州卖场（Walmart M5）**：跨州无跑单客流，本地日历占绝对主导，**极简的一阶线性模型仅用 0.0006 秒（13.95%）全面反超复杂的树模型与图模型**。

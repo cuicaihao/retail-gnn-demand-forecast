@@ -28,7 +28,10 @@
 ### 2. 异构零售网络拓扑规范
 
 ![图 1：零售网络拓扑与两跳传导机制](figures/retail_network_topology.png)
-> 📊 *图 1：零售网络拓扑与两跳传导机制（对应数据：[`plot_fig1_topology_nodes.csv`](results/plot_data/plot_fig1_topology_nodes.csv) 与 [`plot_fig1_spatial_matrix.csv`](results/plot_data/plot_fig1_spatial_matrix.csv)）*
+> 📊 **图 1 说明**：
+> - **(a) 左图（物理网络拓扑）**：展示「2 座供货仓库（$W_1$ 橙红、$W_2$ 蓝青）+ 10 家门店 + 3 大地理商圈」的物理空间分布。虚线代表上游供货链路 $\mathcal{E}^{\mathrm{sup}}$，实线代表门店间基于步行距离衰减的客流转移边 $\mathcal{E}^{\mathrm{spa}}$；**红色加粗边框突出标出了两家关键的跨仓枢纽店**——东区商圈内由 $W_2$ 供货的 $S_4$ 以及中轴走廊中间夹心的 $S_6$。
+> - **(b) 右图（空间转移矩阵 $\mathbf{P}^{\mathrm{spa}}$ 热力图）**：对角线置 0（消除自身转移），以 Blues 蓝色深浅呈现同一商圈内邻近门店间的转移概率 $P_{ij}^{\mathrm{spa}}$；商圈外部转移概率严格归零（呈现白色空白），体现出清晰的地理局部性。
+> - *对应数据：[`plot_fig1_topology_nodes.csv`](results/plot_data/plot_fig1_topology_nodes.csv) 与 [`plot_fig1_spatial_matrix.csv`](results/plot_data/plot_fig1_spatial_matrix.csv)*
 
 网络拓扑定义为异构有向加权图 $G = (\mathcal{V}^{\mathrm{W}} \cup \mathcal{V}^{\mathrm{S}}, \; \mathcal{E}^{\mathrm{sup}} \cup \mathcal{E}^{\mathrm{spa}})$：
 - **仓库集合**：$\mathcal{V}^{\mathrm{W}} = \{W_1\text{ (东区仓)}, W_2\text{ (西区仓)}\}$
@@ -48,9 +51,18 @@ $$A_{ij}^{\mathrm{spa}} = \exp\!\left(-\frac{d_{ij}^2}{2\sigma_d^2}\right)\cdot 
 ### 3. 四层耦合数据生成机制 (DGP)
 
 ![图 2：全网 10 店 184 天真实销售全景](figures/all_stores_sales_panorama.png)
+> 📊 **图 2 说明（全网 10 店销售全景）**：
+> - 展现 2025-07-01 至 12-31（共 184 天）全网 10 家门店的时序面板（5 行 2 列）。
+> - **灰色虚线**为无约束的潜在真实需求真值 $D_{i,t}^{\mathrm{sim}}$；**彩色实线**为实际入账销量 $y_{i,t}^{\mathrm{sales}}$（交界枢纽店 $S_4, S_6$ 标题与实线为暖橙色，其余普通店为深蓝色）。
+> - **黄色垂直半透明阴影带**标定各店自身的促销窗口（大促 $q=0.35$ 与中促 $q=0.20$）；**红色倒三角**精准标出发生库存耗尽截断（$D > V$）的缺货点，直观可见 $W_1$ 供货门店在 12 月多次被截断按平在 50 件上限。
+> - *对应数据：[`plot_fig2_panorama_184d.csv`](results/plot_data/plot_fig2_panorama_184d.csv)*
 
 ![图 3：单店需求四层物理分解](figures/single_store_decomposition.png)
-> 📊 *图 2 & 图 3：全网销售全景与单店需求四层物理分解（对应数据：[`plot_fig2_panorama_184d.csv`](results/plot_data/plot_fig2_panorama_184d.csv) 与 [`plot_fig3_decomposition_s1_s6.csv`](results/plot_data/plot_fig3_decomposition_s1_s6.csv)）*
+> 📊 **图 3 说明（单店需求物理层分解）**：
+> - 对比东区主力店 $S_1$（上图，由 $W_1$ 供货受截断）与中轴跨仓枢纽店 $S_6$（下图，由 $W_2$ 供货承接溢出客流）的四层物理量动态演化。
+> - **黑色实线**为单店自身独立基准需求 $\mu_{i,t}^{\mathrm{self}}$；**蓝色填充区**代表受邻店促销分流导致的客流虹吸损失（$-C$）；**浅绿色填充区**代表邻店断货涌入本店的正向溢出增量（$+L$）；**粉红色填充区**代表货架缺货被截断造成的实体失销损失（$D^{\mathrm{sim}} - y^{\mathrm{sales}}$）。
+> - 右侧浅黄色半透明阴影区域标出最后 28 天（12-04 至 12-31）的统一评测测试集，可见 $S_6$ 在测试期承接了多波高达数十件的断货溢出客流（浅绿峰值）。
+> - *对应数据：[`plot_fig3_decomposition_s1_s6.csv`](results/plot_data/plot_fig3_decomposition_s1_s6.csv)*
 
 - **时间轴**：`2023-01-01` 至 `2025-12-31`（$T = 1,096$ 天）。前 1,068 天训练，后 28 天（`2025-12-04` 至 `12-31`）测试。
 - **Layer 1（仓库马尔可夫链）**：$Z_{w,t}^{\mathrm{wh}} \in \{0\text{ (正常)}, 1\text{ (拥堵)}, 2\text{ (断货)}\}$，时齐转移矩阵驱动。次日门店库存上限 $V_{i,t} \in \{999, 95, 50\}$。测试集包含三次典型冲击：
@@ -213,9 +225,18 @@ $$\mathbf{x}_{i,t}^{\mathrm{local}} = \begin{bmatrix} 1 \\ \tilde{\mathbf{x}}_{i
 ### 3. 成绩单 (对应 `results/metrics/exp1_feature_ablation_metrics.csv`)
 
 ![图 4：测试期 S5 与 S6 预测时序对齐](figures/store_timeseries_comparison.png)
+> 📊 **图 4 说明（测试集 28 天相邻门店动态耦合与预测轨迹对齐）**：
+> - 聚焦中轴走廊走廊相邻两店在测试集（2025-12-04 至 12-31）的动态对齐。
+> - **(a) 上图（$S_5$，由 $W_1$ 供货）**：12-08 至 12-12 期间上游仓库断货，供货上限被压缩至 50 件，粉红色区域为未能满足的截断需求。单店全量模型误将截断当作需求崩塌，而去截断模型（蓝虚线）能稳定预估潜在需求。
+> - **(b) 下图（$S_6$，由 $W_2$ 供货的跨仓枢纽店）**：在 $S_5$ 与 $S_7$ 同时断货的 12-08 至 12-12 窗口，两侧客流蜂拥而至，黑色圆点标注的真实潜在需求冲上 **200 件极端峰值**。单店去截断（蓝虚线）和一阶宽表（橙点划线）严重低估，最高仅报出 130–160 件；唯有两层异构图模型（紫红粗实线）精准跟踪到 200 件峰值。
+> - *对应数据：[`plot_fig4_test_28d_s5_s6.csv`](results/plot_data/plot_fig4_test_28d_s5_s6.csv)*
 
 ![图 5：分场景消融与误差柱状图](figures/regime_ablation_metrics.png)
-> 📊 *图 4 & 图 5：测试期预测时序对齐与分场景消融对比（对应数据：[`plot_fig4_test_28d_s5_s6.csv`](results/plot_data/plot_fig4_test_28d_s5_s6.csv) 与 [`plot_fig5_ablation_regimes.csv`](results/plot_data/plot_fig5_ablation_regimes.csv)）*
+> 📊 **图 5 说明（各业务子场景 WAPE 与系统性偏差 Bias 对比柱状图）**：
+> - 严密对比 5 大核心代表模型在三大业务切片下的精度阶梯。
+> - **(a) 左图（各场景 WAPE %）**：在常规平稳期与促销虹吸期，单店去截断（深蓝）与一阶模型（橙色）误差在 3%–11% 之间尚可接受；但在**跨店断货溢出期**，单店与一阶模型误差直接跳涨至 **21.1%–29.2%**，而两层异构图模型（紫红柱）一举压低至 **3.26%**。
+> - **(b) 右图（系统性偏差 Bias %）**：负值代表系统性少报低估。在跨店断货溢出期，1A、1B 与一阶模型向下产生 **-20.7% 至 -29.2% 的严重负偏漏报**；唯独异构图网络（紫红柱）偏差几乎贴在 0 轴（仅 **-0.68%**），彻底根除了由于漏报导致的连锁断货死循环。
+> - *对应数据：[`plot_fig5_ablation_regimes.csv`](results/plot_data/plot_fig5_ablation_regimes.csv)*
 
 | 模型代号与名称 | 账本拟合方式 | 求解引擎 | 单模型耗时 | 单店特征数 | 矩阵总列数 (参数量) | 全网总体 WAPE (Bias) | 常规平稳期 WAPE | 邻店促销虹吸期 WAPE (Bias) | 跨店断货溢出期 WAPE (Bias) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -288,8 +309,12 @@ GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Grad
 
 ### 3. 成绩单 (对应 `results/metrics/exp2_model_family_metrics.csv` & `exp2_negative_control_metrics.csv`)
 
-![图 8：特征维度与参数量 vs. 误差及空间相变扫描](figures/feature_dim_vs_wape.png)
-> 📊 *图 8：特征维度与参数量 vs. 误差及空间耦合相变扫描（对应数据：[`plot_fig8_feature_dim_vs_wape.csv`](results/plot_data/plot_fig8_feature_dim_vs_wape.csv) 与 [`exp2_coupling_phase_sweep.csv`](results/metrics/exp2_coupling_phase_sweep.csv)）*
+![图 8：特征维度与参数量 vs. 误差阶梯](figures/feature_dim_vs_wape.png)
+> 📊 **图 8 说明（特征维度阶梯与信息边界：参数增加无法逾越信息拓扑缺失）**：
+> - 横轴为设计矩阵参数/特征列数（对数坐标：7, 16, 27, 70, 80 列），纵轴为预测误差 WAPE (%)。
+> - **深色实心点**代表全周期总体 WAPE，**浅色红圈点**代表跨店断货溢出期 WAPE，垂直虚线连接同一模型的两个误差指标。
+> - 图中清晰可见：单纯通过全网大账本堆砌样本池化参数（$L2a$ 16 列到 $L2b$ 70 列），溢出期误差依然被死死卡在 **22.35%** 的水平警戒线上；唯有引入跨店两跳拓扑交互的模型（27d、79d 与 GNN），溢出期误差才发生断崖式击穿至 **3%–12%**。
+> - *对应数据：[`plot_fig8_feature_dim_vs_wape.csv`](results/plot_data/plot_fig8_feature_dim_vs_wape.csv)*
 
 | 参赛模型与所属家族 | 求解引擎 | 拟合耗时 | 单店维度 / 列数 | 模型规模 | 全网总体 WAPE (5种子均值±标准差) | 常规平稳期 WAPE | 邻店虹吸期 WAPE | 断货溢出期 WAPE (Bias) | 零耦合负对照 WAPE |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -330,7 +355,12 @@ GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Grad
 ## 三、实验三：门店全景体检、信号失真与故障注入
 
 ![图 7：10 门店 x 3 大场景全量模型误差热力图](figures/store_regime_heatmap.png)
-> 📊 *图 7：10 门店 x 3 大场景全量模型误差热力图（对应数据：[`exp3_store_overall_comparison.csv`](results/metrics/exp3_store_overall_comparison.csv) 与 [`exp3_fault_injection_blast_radius.csv`](results/metrics/exp3_fault_injection_blast_radius.csv)）*
+> 📊 **图 7 说明（10 家门店在各业务子场景下的模型误差热力图全景）**：
+> - 采用 **`YlOrRd`（黄-橙-红）渐变色温阶** 直观呈现 10 家门店（纵轴 $S_1 \dots S_{10}$）在各算法（横轴 1A 至 3-Neural GNN）下的真实 WAPE（%）；数值越低越呈现浅淡米黄色（低温安全区），数值越高越趋向深红褐色（高温失控区）。
+> - **(a) 左图（常规平稳期）**：全网门店普遍处于 3%–6% 的淡黄色低温区，单店去截断与树模型表现优秀；
+> - **(b) 中图（邻店促销虹吸期）**：单店模型在部分被虹吸门店出现局部橙色加深（6%–13%）；
+> - **(c) 右图（跨店断货溢出期）**：单店模型与一阶线性模型在前几列的交界枢纽店（$S_1\text{--}S_4, S_6$）处全线爆发为刺眼的深橙红高热火苗（WAPE 达 20%–47%！）；而最右侧两列的端到端图神经网络（3 Neural GNN）与解析图将全网扑灭回均匀的浅米黄色（各店仅 2.9%–5.2%）。
+> - *对应数据：[`exp3_store_overall_comparison.csv`](results/metrics/exp3_store_overall_comparison.csv) 与 [`plot_fig7_store_regime_heatmap.csv`](results/plot_data/plot_fig7_store_regime_heatmap.csv)*
 
 ### 1. 实验目的
 走出全网平均数，透视 10 家处境各异的门店在不同场景下的真实账单，并检验现场报表漏标、迟到与设备故障的破坏半径。
@@ -354,8 +384,8 @@ GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Grad
 ### 3. 业务案例与系统鲁棒性深度剖析
 
 1. **十字路口交界店的物理宿命（图 7 热力图全景）**：
-   在图 7 展现的 10 门店全景热力图中，单店去截断模型在常规平稳期表现亮眼（全网绿色），但在跨店断货溢出期，$S_1\text{--}S_4$ 和 $S_6$ 瞬间爆发为刺眼的深红火苗（WAPE 达 20%–47%）。
-   - **$S_4$ 与 $S_6$ 的特殊性**：它们是典型的**跨仓交界枢纽**。当 $W_1$ 仓库断货导致周边邻店货架空空如也时，顾客在步行 500 米内自然涌入有货的 $S_4$ 和 $S_6$。单店模型因为看不到邻店上游仓库状态，发生系统性严重漏报（负偏高达 -25% 至 -30%）；而端到端图神经网络（GNN）将热力图完全扑灭为清凉的浅绿（WAPE 稳在 2.9%–3.9%）。
+   在图 7 展现的 10 门店全景热力图中，单店去截断模型在常规平稳期表现亮眼（全网呈现 3%–5% 的浅淡米黄色低温区），但在跨店断货溢出期，$S_1\text{--}S_4$ 和 $S_6$ 瞬间爆发为刺眼的深橙红火苗（WAPE 达 20%–47%）。
+   - **$S_4$ 与 $S_6$ 的特殊性**：它们是典型的**跨仓交界枢纽**。当 $W_1$ 仓库断货导致周边邻店货架空空如也时，顾客在步行 500 米内自然涌入有货的 $S_4$ 和 $S_6$。单店模型因为看不到邻店上游仓库状态，发生系统性严重漏报（负偏高达 -25% 至 -30%）；而端到端图神经网络（GNN）将热力图全列压平为安全低温的浅淡米黄色（各店稳定在 2.9%–5.2%）。
 2. **数据质量是图模型的生命线（幽灵库存与报表延迟）**：
    表 3B 的敏感性测试给工业界算法团队敲响了警钟：**图模型是高度依赖上下游信号质量的精密仪器**。
    - 现场一旦发生“幽灵库存”（即门店实际缺货但店员未在 PDA 扫码标记，导致系统误以为有货），漏记率达到 30% 时，两跳图模型的溢出期误差即由 **3.95% 剧烈恶化至 22.49%**，相比单店模型的优势荡然无存；
@@ -395,7 +425,12 @@ GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Grad
 ### 2. 成绩单 (对应 `results/metrics/exp4_public_datasets_macro.csv`)
 
 ![图 9：三大真实公开工业基准横向大评测](figures/public_benchmarks_comparison.png)
-> 📊 *图 9：三大真实公开工业基准横向大评测（对应数据：[`plot_fig9_public_benchmarks.csv`](results/plot_data/plot_fig9_public_benchmarks.csv) 与 [`exp4_public_datasets_by_store_wide.csv`](results/metrics/exp4_public_datasets_by_store_wide.csv)）*
+> 📊 **图 9 说明（三大真实公开工业基准横向评测全景柱状图）**：
+> - 横向对比 7 大主流模型在三大真实公开工业基准上的总体 WAPE (%) 与系统性偏差 Bias (%)，柱顶标签格式为 `WAPE% (Bias%)`。
+> - **场景一（叮咚买菜同城生鲜前置仓）**：受 30.8% 营业期高频缺货截断影响，单店模型与盲算模型普遍产生 -25% 负偏低估，全网池化共享弹性（27.0%）与 XGBoost（32.2%）表现最稳健；
+> - **场景二（厄瓜多尔 Favorita 连锁超市群）**：缺失显式缺货记录，核心驱动力转为发薪日脉冲与打折让利，**XGBoost（12.1% 橙色柱）斩获全场第一**，与图模型（13.0%）和 LightGBM（13.2%）并驾齐驱；
+> - **场景三（沃尔玛 M5 跨州巨型卖场）**：门店间相隔数百公里无跨店客流溢出，本地 SNAP 食品券日历占主导，**简单一阶线性模型仅耗时 0.0006s 拿下 14.0% 最优成绩**，复杂树模型反而因参数过多引发过拟合（24.6%–25.2%）。
+> - *对应数据：[`plot_fig9_public_benchmarks.csv`](results/plot_data/plot_fig9_public_benchmarks.csv) 与 [`exp4_public_datasets_by_store_wide.csv`](results/metrics/exp4_public_datasets_by_store_wide.csv)*
 
 #### 表 4A：三大真实公开基准（各 10 家门店汇总）全量评测总表（含训练耗时与求解引擎）
 
@@ -445,7 +480,12 @@ GBDT / XGBoost 采用直方图优化梯度提升决策树（Histogram-based Grad
 ### 3. 深度专题：直接使用 NumPy 还是流行 ML/DL 工具包？训练代价 vs. 预测精度的全景剖析
 
 ![图 6：工具链帕累托权衡与四层工具生态](figures/multitool_benchmark_tradeoff.png)
-> 📊 *图 6：工具链帕累托权衡与四层工具生态架构图*
+> 📊 **图 6 说明（工具链性能帕累托前沿与四层工具生态架构）**：
+> - **(a) 左图（单次训练耗时 vs. 溢出期 WAPE 帕累托图）**：横轴为拟合耗时（对数坐标，0.001s 至 10s），纵轴为跨店断货溢出期 WAPE (%)。清楚勾勒出三大信息阶梯：
+>   - **Tier 1B（单店去截断层，深蓝）**：NumPy 闭式解仅需 0.0007s，但受制于单店视野盲区，溢出期误差定格在 22.3%；
+>   - **Tier 2（一阶空间宽表层，橙色）**：LightGBM 与 XGBoost 耗时约 0.10s–0.26s，利用直方图贪心切分自动找回 60% 溢出红利（误差压缩至 10.4%–10.9%）；
+>   - **Tier 3（双层异构图模型层，紫红）**：端到端连续图神经网络耗时 1.17s，打破阶梯常数天花板，将溢出期误差彻底砸至 3.26% 理论上限。
+> - **(b) 右图（四层工具生态定位）**：自底向上阐明工业界不同工具解决的工程抽象层次——① NumPy/SciPy 零开销解析基准 $\to$ ② LightGBM/XGBoost 开箱即用树模型与时序宽表接口 $\to$ ③ PyG/DGL 可定制异构图消息传递算子 $\to$ ④ LibCity/Benchmarks 标准化时空评测流水线。说明工具选型本质是解决不同层次工程抽象的权衡。
 
 结合博文 [《5.5 工具包评测：信息结构比框架名称更重要》](https://cuicaihao.github.io/zh/posts/2026-10-24-fsm-stochastic-gnn-retail-forecast/#55-%E5%B7%A5%E5%85%B7%E5%8C%85%E8%AF%84%E6%B5%8B%E4%BF%A1%E6%81%AF%E7%BB%93%E6%9E%84%E6%AF%94%E6%A1%86%E6%9E%B6%E5%90%8D%E7%A7%B0%E6%9B%B4%E9%87%8D%E8%A6%81) 的理论思考与上述四个实验的实测数据，我们可以从**计算耗时、工程代价与精度收益**三个维度建立清晰的选型认知：
 
