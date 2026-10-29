@@ -469,7 +469,7 @@ def plot_fig6_toolkit_tradeoff(out_dir: Path, lang: str = "zh") -> None:
         {"name_zh": "2+ · LightGBM 二阶图", "name_en": "2+ · LightGBM 2-Hop", "tier": "3", "t": df.loc["M_GBDT_2Hop_Graph_27d", "runtime_sec"] if "M_GBDT_2Hop_Graph_27d" in df.index else 0.26, "w": df.loc["M_GBDT_2Hop_Graph_27d", "Spillover_D_wape"] if "M_GBDT_2Hop_Graph_27d" in df.index else 12.5, "pos": (-85, 10)},
         {"name_zh": "2+ · XGBoost 二阶图", "name_en": "2+ · XGBoost 2-Hop", "tier": "3", "t": df.loc["M_XGBoost_2Hop_Graph_27d", "runtime_sec"] if "M_XGBoost_2Hop_Graph_27d" in df.index else 0.34, "w": df.loc["M_XGBoost_2Hop_Graph_27d", "Spillover_D_wape"] if "M_XGBoost_2Hop_Graph_27d" in df.index else 12.6, "pos": (8, -14)},
         {"name_zh": "3 · 解析图模型", "name_en": "3 · Analytical Graph", "tier": "3", "t": 0.0055, "w": df.loc["M3_Analytical_2Hop_79d", "Spillover_D_wape"] if "M3_Analytical_2Hop_79d" in df.index else 3.95, "pos": (8, 6)},
-        {"name_zh": "3 · PyG 异构图", "name_en": "3 · PyG Hetero-GNN", "tier": "3", "t": 1.17, "w": df.loc["M3_Neural_HeteroGNN_2Layer", "Spillover_D_wape"] if "M3_Neural_HeteroGNN_2Layer" in df.index else 3.26, "pos": (-70, -22)},
+        {"name_zh": "3 · 神经异构图", "name_en": "3 · Neural Hetero-GNN", "tier": "3", "t": 1.17, "w": df.loc["M3_Neural_HeteroGNN_2Layer", "Spillover_D_wape"] if "M3_Neural_HeteroGNN_2Layer" in df.index else 3.26, "pos": (-70, -22)},
     ]
 
     tier_color = {"1B": C_1B, "2": C_2, "3": C_3}
